@@ -9,6 +9,7 @@ public class Player {
     public int size = 30;
     public int speed = 4;
     public boolean isIt = false;
+    public long timeAsIt = 0;
 
     // For simple bot movement
     public boolean bot;

@@ -16,6 +16,10 @@ public class GamePanel extends JPanel {
 
     private Player mainPlayer;
 
+    private final GameTimer timer = new GameTimer(70);
+
+    private ScoreManager scoreManager;
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(800, 600));
         this.setBackground(Color.BLACK);
@@ -23,6 +27,8 @@ public class GamePanel extends JPanel {
         this.addKeyListener(keyH);
 
         initializePlayers();
+
+        this.scoreManager = new ScoreManager(players);
     }
 
     private void initializePlayers() {
@@ -38,9 +44,17 @@ public class GamePanel extends JPanel {
     }
 
     public void updateGame() {
+
+        timer.update();
+
+        if (timer.isGameOver()) {
+            return;
+        }
+
         updateMainPlayer();
         updateBots();
         handleTagging();
+        scoreManager.updateScore(getCurrentItPlayer());
     }
 
     private void updateMainPlayer() {
@@ -122,5 +136,13 @@ public class GamePanel extends JPanel {
         }
 
         g.drawString("Week 2: Bots + Collision + Tagging", 10, 70);
+
+        timer.draw(g);
+
+        scoreManager.drawScores(g, getWidth(), getHeight());
+
+        if (timer.isGameOver()) { 
+        scoreManager.drawWinner(g, getWidth(), getHeight());
+        }
     }
 }
