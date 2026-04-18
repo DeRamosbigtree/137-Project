@@ -6,16 +6,21 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import main.model.Player;
 
-
+/**
+ * ScoreManager tracks how long each player has been "it" and renders scores and winner info.
+ * The player who is "it" the least amount of time wins.
+ */
 public class ScoreManager {
     private ArrayList<Player> players;
     private long lastUpdateTime;
 
+    // constructor
     public ScoreManager(ArrayList<Player> players) {
         this.players = players;
         this.lastUpdateTime = System.currentTimeMillis();
     }
 
+    // update time for the current "it" player
     public void updateScore(Player currentIt) {
         long currentTime = System.currentTimeMillis();
         long timePassed = currentTime - lastUpdateTime;
@@ -27,6 +32,7 @@ public class ScoreManager {
         lastUpdateTime = currentTime;
     }
 
+    // render each player's score at the bottom of the screen
     public void drawScores(Graphics g, int panelWidth, int panelHeight){
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
@@ -37,7 +43,7 @@ public class ScoreManager {
         for (int i = 0; i < players.size(); i++) {
             Player p = players.get(i);
             
-            // Convert milliseconds back to seconds for the UI
+            // convert milliseconds to seconds for display
             long secondsAsIt = p.timeAsIt / 1000; 
             
             int xPos = (i * spacing) + 50; 
@@ -45,10 +51,12 @@ public class ScoreManager {
         }
     }
 
+    // display the winner (player with lowest time as "it") centered on screen
     public void drawWinner(Graphics g, int panelWidth, int panelHeight) {
 
         Player winner = players.get(0);
 
+        // find player with minimum time spent as "it"
         for (Player p : players) {
             if (p.timeAsIt < winner.timeAsIt) { 
                 winner = p;
