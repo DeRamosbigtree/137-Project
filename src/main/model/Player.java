@@ -7,9 +7,13 @@ public class Player {
     public int id;
     public int x, y;
     public int size = 30;
-    public int speed = 4;
+    public double speed = 4;
     public boolean isIt = false;
     public long timeAsIt = 0;
+    public boolean isFrozen = false;
+    public boolean isImmune = false;
+    public boolean isInvisible = false;
+    public int trapCharges;
 
     // For simple bot movement
     public boolean bot;
@@ -27,6 +31,8 @@ public class Player {
     }
 
     public void move(int dx, int dy) {
+    	if (isFrozen) return;
+    	
         x += dx * speed;
         y += dy * speed;
     }
@@ -56,4 +62,5 @@ public class Player {
         if (x > panelWidth - size) x = panelWidth - size;
         if (y > panelHeight - size) y = panelHeight - size;
     }
+
 }

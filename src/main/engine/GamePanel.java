@@ -8,6 +8,14 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 import main.input.KeyHandler;
 import main.model.Player;
+import main.model.PowerUp;
+import main.model.Trap;
+
+import java.util.Iterator;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class GamePanel extends JPanel {
 
@@ -19,6 +27,15 @@ public class GamePanel extends JPanel {
     private final GameTimer timer = new GameTimer(70);
 
     private ScoreManager scoreManager;
+    
+    private final ArrayList<PowerUp> powerUps = new ArrayList<>();
+    private final ArrayList<Trap> traps = new ArrayList<>();
+    private final Random rand = new Random();
+
+    private long lastSpawn = 0;
+    private final long spawnDelay = 3000; // 7 seconds
+    
+    
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(800, 600));
@@ -53,6 +70,11 @@ public class GamePanel extends JPanel {
 
         updateMainPlayer();
         updateBots();
+        
+        updatePowerUps();
+        updateEffects();
+        updateTraps(players);
+        
         handleTagging();
         scoreManager.updateScore(getCurrentItPlayer());
     }
@@ -65,6 +87,7 @@ public class GamePanel extends JPanel {
         if (keyH.down) dy++;
         if (keyH.left) dx--;
         if (keyH.right) dx++;
+        if (keyH.space) placeTrap(mainPlayer);
 
         mainPlayer.move(dx, dy);
         mainPlayer.clampToBounds(getWidth(), getHeight());
@@ -86,9 +109,16 @@ public class GamePanel extends JPanel {
             if (p == currentIt) continue;
 
             if (currentIt.getBounds().intersects(p.getBounds())) {
-                currentIt.isIt = false;
-                p.isIt = true;
-                break;
+            	if (p.isImmune) {
+            		// delays removal of shield so that next collision isn't immediately counted
+            		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            		scheduler.schedule(() -> {p.isImmune = false;}, 1, TimeUnit.SECONDS);
+            	}else {
+            		currentIt.isIt = false;
+                    p.isIt = true;
+                    break;
+            	}
+                
             }
         }
     }
@@ -108,6 +138,8 @@ public class GamePanel extends JPanel {
 
         drawPlayers(g);
         drawUI(g);
+        drawPowerUps(g);
+
     }
 
     private void drawPlayers(Graphics g) {
@@ -115,7 +147,12 @@ public class GamePanel extends JPanel {
             if (p.isIt) {
                 g.setColor(Color.RED);
             } else {
-                g.setColor(Color.BLUE);
+            	if(p.isImmune) {
+            		g.setColor(Color.GREEN);
+            	}else {
+            		g.setColor(Color.BLUE);
+            	}
+                
             }
 
             g.fillRect(p.x, p.y, p.size, p.size);
@@ -143,6 +180,163 @@ public class GamePanel extends JPanel {
 
         if (timer.isGameOver()) { 
         scoreManager.drawWinner(g, getWidth(), getHeight());
+        }
+    }
+    
+    private void drawPowerUps(Graphics g) {
+        for (PowerUp p : powerUps) {
+            switch (p.type) {
+                case SPEED: g.setColor(Color.YELLOW); break;
+                case FREEZE: g.setColor(Color.CYAN); break;
+                case SHIELD: g.setColor(Color.GREEN); break;
+                case GHOST: g.setColor(Color.WHITE); break;
+            }
+            g.fillOval(p.x, p.y, p.size, p.size);
+        }
+        
+        // draw traps
+        g.setColor(Color.MAGENTA);
+        for (Trap t : traps) {
+            g.fillRect(t.x, t.y, t.size, t.size);
+        }
+    }
+    
+    // Power-up
+    // Track active effects per player
+    public static class Effect {
+        PowerUp.Type type;
+        long endTime;
+
+        Effect(PowerUp.Type type, long duration) {
+            this.type = type;
+            this.endTime = System.currentTimeMillis() + duration;
+        }
+    }
+
+    private final java.util.Map<Player, java.util.List<Effect>> activeEffects = new java.util.HashMap<>();
+    
+    private void applyEffect(Player player, PowerUp.Type type) {
+
+        activeEffects.putIfAbsent(player, new ArrayList<>());
+
+        switch (type) {
+            case SPEED:
+                player.speed = 6 ; // boosted speed by 50%
+                activeEffects.get(player).add(new Effect(type, 3000));
+                break;
+
+            case FREEZE:
+                player.trapCharges += 1;
+                break;
+            case SHIELD:
+            	player.isImmune = true;
+            	activeEffects.get(player).add(new Effect(type, 10000));
+            	break;
+            case GHOST:
+            	player.isInvisible = true;
+            	activeEffects.get(player).add(new Effect(type, 4000));
+            	break;
+        }
+    }
+    
+    private void spawnPowerUp() {
+        int width = Math.max(getWidth(), 800);
+        int height = Math.max(getHeight(), 600);
+
+        int x = rand.nextInt(width - 20);
+        int y = rand.nextInt(height - 20);
+        powerUps.add(new PowerUp(x, y, PowerUp.getRandomType()));
+    }
+    
+    private void updatePowerUps() {
+        long now = System.currentTimeMillis();
+
+        // allow spawning of power up every 7 seconds 
+        if (now - lastSpawn > spawnDelay) {
+            spawnPowerUp();
+            lastSpawn = now;
+        }
+
+        // collision
+        Iterator<PowerUp> it = powerUps.iterator();
+
+        while (it.hasNext()) {
+            PowerUp p = it.next();
+
+            for (Player player : players) {
+                if (player.getBounds().intersects(p.getBounds())) {
+
+                    applyEffect(player, p.type);
+                    it.remove();
+                    break;
+                }
+            }
+        }
+    }
+    
+    public void placeTrap(Player player) {
+        if (player.trapCharges <= 0) return;
+
+        traps.add(new Trap(player.x, player.y, player));
+        player.trapCharges--;
+    }
+    
+    private void updateTraps(ArrayList<Player> players) {
+        Iterator<Trap> it = traps.iterator();
+
+        while (it.hasNext()) {
+            Trap t = it.next();
+
+            for (Player p : players) {
+                if (p == t.owner) continue;
+
+                if (p.getBounds().intersects(t.getBounds())) {
+
+                    // apply freeze effect to player (2 seconds)
+                    activeEffects.putIfAbsent(p, new ArrayList<>());
+                    activeEffects.get(p).add(new Effect(PowerUp.Type.FREEZE, 2000));
+
+                    it.remove();
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void updateEffects() {
+        long now = System.currentTimeMillis();
+
+        for (Player player : players) {
+
+            // skip if no effects
+            if (!activeEffects.containsKey(player)) continue;
+
+            java.util.List<Effect> effects = activeEffects.get(player);
+
+            Iterator<Effect> it = effects.iterator();
+
+            boolean hasSpeed = false;
+            boolean isFrozen = false;
+            boolean isImmune = false;
+            boolean isInvisible = false;
+
+            while (it.hasNext()) {
+                Effect e = it.next();
+
+                if (now > e.endTime) {
+                    it.remove();
+                } else {
+                    if (e.type == PowerUp.Type.SPEED) hasSpeed = true;
+                    if (e.type == PowerUp.Type.FREEZE) isFrozen = true;
+                    if( e.type == PowerUp.Type.SHIELD) isImmune = true;
+                    if( e.type == PowerUp.Type.GHOST) isInvisible = true;
+                }
+            }
+
+            player.speed = hasSpeed ? 6 : 4;
+            player.isFrozen = isFrozen;
+            //player.isImmune = isImmune;
+            player.isInvisible = isInvisible;
         }
     }
 }
