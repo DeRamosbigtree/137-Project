@@ -15,8 +15,14 @@ public class Player {
     public boolean isInvisible = false;
     public int trapCharges;
 
+    // Tag cooldown
+    public boolean isInvulnerable = false;
+    public long lastTaggedTime = 0;
+    
+
     // For simple bot movement
     public boolean bot;
+    // public boolean isStatic = false;
     private int botDx = 0;
     private int botDy = 0;
     private int directionTimer = 0;
@@ -61,6 +67,16 @@ public class Player {
         if (y < 0) y = 0;
         if (x > panelWidth - size) x = panelWidth - size;
         if (y > panelHeight - size) y = panelHeight - size;
+    }
+
+    public void updateInvulnerability() {
+        if (isInvulnerable) {
+            long currentTime = System.currentTimeMillis();
+
+            if (currentTime - lastTaggedTime >= 2000) {
+                isInvulnerable = false;
+            }
+        }
     }
 
 }

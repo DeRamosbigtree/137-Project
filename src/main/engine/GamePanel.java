@@ -5,17 +5,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Random;
 import javax.swing.JPanel;
 import main.input.KeyHandler;
 import main.model.Player;
 import main.model.PowerUp;
 import main.model.Trap;
-
-import java.util.Iterator;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class GamePanel extends JPanel {
 
@@ -75,11 +71,17 @@ public class GamePanel extends JPanel {
         updateEffects();
         updateTraps(players);
         
+        for (Player p : players) {
+            p.updateInvulnerability();
+        }
+
         handleTagging();
         scoreManager.updateScore(getCurrentItPlayer());
     }
 
     private void updateMainPlayer() {
+        if (mainPlayer.isFrozen) return;
+        
         int dx = 0;
         int dy = 0;
 
@@ -95,12 +97,13 @@ public class GamePanel extends JPanel {
 
     private void updateBots() {
         for (Player p : players) {
-            if (p.bot) {
+            if (p.bot && !p.isFrozen) {
                 p.updateBotMovement(getWidth(), getHeight());
             }
         }
     }
 
+    
     private void handleTagging() {
         Player currentIt = getCurrentItPlayer();
         if (currentIt == null) return;
@@ -108,18 +111,29 @@ public class GamePanel extends JPanel {
         for (Player p : players) {
             if (p == currentIt) continue;
 
-            if (currentIt.getBounds().intersects(p.getBounds())) {
-            	if (p.isImmune) {
-            		// delays removal of shield so that next collision isn't immediately counted
-            		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-            		scheduler.schedule(() -> {p.isImmune = false;}, 1, TimeUnit.SECONDS);
-            	}else {
-            		currentIt.isIt = false;
-                    p.isIt = true;
-                    break;
-            	}
-                
+            // ONLY handle logic if they collide
+            if (!currentIt.getBounds().intersects(p.getBounds())) continue;
+
+            // If target is in cooldown
+            if (p.isInvulnerable) continue;
+
+            // If target has shield (immune)
+            if (p.isImmune) {
+                p.isImmune = false; // consume shield
+                return; // no tag happens
             }
+
+            // Normal tag
+            currentIt.isIt = false;
+
+            // former It gets cooldown
+            currentIt.isInvulnerable = true;
+            currentIt.lastTaggedTime = System.currentTimeMillis();
+
+            // new It
+            p.isIt = true;
+
+            return; // ensure ONLY ONE tag happens
         }
     }
 
