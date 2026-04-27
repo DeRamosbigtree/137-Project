@@ -28,6 +28,8 @@ public class GameServer {
                 clients.add(client);
                 new Thread(client).start();
 
+                broadcastAllPlayers();
+
                 System.out.println("Player " + playerId + " joined.");
                 System.out.println("Players connected: " + clients.size() + "/" + MAX_PLAYERS);
 
@@ -45,6 +47,19 @@ public class GameServer {
         for (ClientHandler client : clients) {
             client.send(message);
         }
+    }
+
+    public synchronized void broadcastAllPlayers() {
+        StringBuilder sb = new StringBuilder("STATE");
+
+        for (ClientHandler c : clients) {
+            sb.append(" ")
+            .append(c.playerId).append(",")
+            .append(c.x).append(",")
+            .append(c.y);
+        }
+
+        broadcast(sb.toString());
     }
 
     public static void main(String[] args) {

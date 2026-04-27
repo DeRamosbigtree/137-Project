@@ -12,6 +12,7 @@ import main.input.KeyHandler;
 import main.model.Player;
 import main.model.PowerUp;
 import main.model.Trap;
+import main.network.GameClient;
 
 public class GamePanel extends JPanel {
 
@@ -19,6 +20,7 @@ public class GamePanel extends JPanel {
     private final KeyHandler keyH = new KeyHandler();
 
     private Player mainPlayer;
+    private GameClient client;
 
     private final GameTimer timer = new GameTimer(70);
 
@@ -39,7 +41,20 @@ public class GamePanel extends JPanel {
         this.setFocusable(true);
         this.addKeyListener(keyH);
 
-        initializePlayers();
+        try {
+            client = new GameClient();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // initializePlayers();
+        for (int i = 0; i < 4; i++) {
+            players.add(new Player(i, 100, 100, false));
+        }
+
+        if (mainPlayer == null && client.playerId >= 0 && client.playerId < players.size()) {
+            mainPlayer = players.get(client.playerId);
+        }
 
         this.scoreManager = new ScoreManager(players);
     }
@@ -58,21 +73,35 @@ public class GamePanel extends JPanel {
 
     public void updateGame() {
 
-        timer.update();
+        // timer.update();
 
-        if (timer.isGameOver()) {
-            return;
+        // if (timer.isGameOver()) {
+        //     return;
+        // }
+
+        if (mainPlayer == null && client.playerId >= 0 && client.playerId < players.size()) {
+            mainPlayer = players.get(client.playerId);
         }
 
         updateMainPlayer();
-        updateBots();
+        // updateBots();
         
-        updatePowerUps();
-        updateEffects();
-        updateTraps(players);
+        // updatePowerUps();
+        // updateEffects();
+        // updateTraps(players);
         
         for (Player p : players) {
             p.updateInvulnerability();
+        }
+
+        if (client != null) {
+            for (Integer id : client.playerStates.keySet()) {
+                if (id < players.size()) {
+                    int[] pos = client.playerStates.get(id);
+                    players.get(id).x = pos[0];
+                    players.get(id).y = pos[1];
+                }
+            }
         }
 
         handleTagging();
@@ -80,8 +109,9 @@ public class GamePanel extends JPanel {
     }
 
     private void updateMainPlayer() {
+        if (mainPlayer == null) return;
         if (mainPlayer.isFrozen) return;
-        
+
         int dx = 0;
         int dy = 0;
 
@@ -89,10 +119,12 @@ public class GamePanel extends JPanel {
         if (keyH.down) dy++;
         if (keyH.left) dx--;
         if (keyH.right) dx++;
-        if (keyH.space) placeTrap(mainPlayer);
 
-        mainPlayer.move(dx, dy);
-        mainPlayer.clampToBounds(getWidth(), getHeight());
+        if (client != null) {
+            client.sendMove(dx, dy);
+        }
+
+        if (keyH.space) placeTrap(mainPlayer);
     }
 
     private void updateBots() {

@@ -5,17 +5,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class GameClient {
+    public Map<Integer, int[]> playerStates = new HashMap<>();
 
     private static final String HOST = "localhost";
     private static final int PORT = 5000;
+    public static GameClient client;
 
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
 
-    private int playerId = -1;
+    public int playerId = -1;
 
     public GameClient() {
         try {
@@ -38,15 +43,27 @@ public class GameClient {
 
     private void listenToServer() {
         try {
-            String message;
+            String msg;
 
-            while ((message = in.readLine()) != null) {
-                if (message.startsWith("ID")) {
-                    String[] parts = message.split(" ");
+            while ((msg = in.readLine()) != null) {
+                String[] parts = msg.split(" ");
+
+                if (parts[0].equals("ID")) {
                     playerId = Integer.parseInt(parts[1]);
-                    System.out.println("Assigned Player ID: " + playerId);
-                } else {
-                    System.out.println(message);
+                    System.out.println("My ID: " + playerId);
+                }
+
+                else if (parts[0].equals("STATE")) {
+
+                    for (int i = 1; i < parts.length; i++) {
+                        String[] data = parts[i].split(",");
+
+                        int id = Integer.parseInt(data[0]);
+                        int x = Integer.parseInt(data[1]);
+                        int y = Integer.parseInt(data[2]);
+
+                        playerStates.put(id, new int[]{x, y});
+                    }
                 }
             }
 
@@ -58,6 +75,12 @@ public class GameClient {
     public void send(String message) {
         out.println(message);
     }
+
+    public void sendMove(int dx, int dy) {
+    if (out != null) {
+        out.println("MOVE " + dx + " " + dy);
+    }
+}
 
     public static void main(String[] args) {
         new GameClient();
