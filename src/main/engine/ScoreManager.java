@@ -51,25 +51,22 @@ public class ScoreManager {
         }
     }
 
-    // display the winner (player with lowest time as "it") centered on screen
-    public void drawWinner(Graphics g, int panelWidth, int panelHeight) {
-
-        Player winner = players.get(0);
-
-        // find player with minimum time spent as "it"
-        for (Player p : players) {
-            if (p.timeAsIt < winner.timeAsIt) { 
-                winner = p;
-            }
-        }
+    // display the winner decided by the server
+    public void drawWinner(Graphics g, int panelWidth, int panelHeight, int winnerId) {
+        g.setColor(new Color(0, 0, 0, 180));
+        g.fillRect(0, 0, panelWidth, panelHeight);
 
         g.setColor(Color.GREEN);
-        g.setFont(new Font("Arial", Font.BOLD, 40));
-        
-        String winText = "WINNER: PLAYER " + winner.id + "!";
+        g.setFont(new Font("Arial", Font.BOLD, 48));
+        String winText = "WINNER: PLAYER " + winnerId + "!";
         int textWidth = g.getFontMetrics().stringWidth(winText);
-        
-        g.drawString(winText, (panelWidth - textWidth) / 2, panelHeight / 2 + 50);
+        g.drawString(winText, (panelWidth - textWidth) / 2, panelHeight / 2 - 20);
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        String sub = "(least time as It)";
+        int subWidth = g.getFontMetrics().stringWidth(sub);
+        g.drawString(sub, (panelWidth - subWidth) / 2, panelHeight / 2 + 30);
     }
 
 }
