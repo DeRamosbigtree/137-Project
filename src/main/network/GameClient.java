@@ -119,10 +119,8 @@ public class GameClient {
         if (out != null) out.println(message);
     }
 
-    public void sendMove(int dx, int dy) {
-    if (out != null) {
-        out.println("MOVE " + dx + " " + dy);
-    }
+    public void sendInput(int dx, int dy) {
+        if (out != null) out.println("INPUT " + dx + " " + dy);
 }
 
     public static void main(String[] args) {
