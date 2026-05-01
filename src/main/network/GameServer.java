@@ -16,7 +16,16 @@ public class GameServer {
     private static final int MATCH_SECONDS = 70;
 
     private ServerSocket serverSocket;
-    private ArrayList<ClientHandler> clients = new ArrayList<>();
+    private final ArrayList<ClientHandler> clients = new ArrayList<>();
+    // for the game phases
+    private enum GamePhase { LOBBY, COUNTDOWN, PLAYING, GAME_OVER }
+    private volatile GamePhase phase = GamePhase.LOBBY;
+
+    private long timeLeftMs = MATCH_SECONDS * 1000L;
+    private int timeLeftSeconds = MATCH_SECONDS;
+    private final long[] scores = new long[MAX_PLAYERS];
+    private long lastTickTime;
+    private long lastScoreBroadcast;
 
     public GameServer() {
         try {
