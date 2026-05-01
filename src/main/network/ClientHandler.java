@@ -69,7 +69,7 @@ public class ClientHandler implements Runnable {
     }
 
     public void send(String message) {
-        out.println(message);
+        if (out != null) out.println(message);
     }
 
     @Override
@@ -80,22 +80,11 @@ public class ClientHandler implements Runnable {
             while ((message = in.readLine()) != null) {
                 String[] parts = message.split(" ");
 
-                if (parts[0].equals("MOVE")) {
-                    int dx = Integer.parseInt(parts[1]);
-                    int dy = Integer.parseInt(parts[2]);
-
-                    x += dx * 5;
-                    y += dy * 5;
-
-                    if (x < 0) x = 0;
-                    if (y < 0) y = 0;
-                    if (x > 800 - 30) x = 800 - 30;
-                    if (y > 600 - 30) y = 600 - 30;
-
-                    server.broadcastAllPlayers();
+                if (parts[0].equals("INPUT") && parts.length == 3) {
+                    dx = Integer.parseInt(parts[1]);
+                    dy = Integer.parseInt(parts[2]);
                 }
             }
-
         } catch (IOException e) {
             System.out.println("Player " + playerId + " disconnected.");
         } finally {
