@@ -5,12 +5,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 
 public class GameClient {
-    public Map<Integer, int[]> playerStates = new HashMap<>();
+
+    // int[] = {x, y, isIt, isInvulnerable, isFrozen, isImmune, isInvisible}
+    public final Map<Integer, int[]> playerStates = new ConcurrentHashMap<>();
+
+    // Game phase: LOBBY, COUNTDOWN, PLAYING, GAME_OVER
+    public volatile String phase = "LOBBY";
+    public volatile int timeLeft = 70;
+    public volatile int countdownValue = 0;
+    public volatile int winnerId = -1;
+    public final long[] scores = new long[4];
 
     private static final String HOST = "localhost";
     private static final int PORT = 5000;
@@ -32,9 +41,6 @@ public class GameClient {
             System.out.println("Connected to server.");
 
             new Thread(this::listenToServer).start();
-
-            send("Hello from client!");
-
         } catch (IOException e) {
             System.out.println("Could not connect to server.");
             e.printStackTrace();
