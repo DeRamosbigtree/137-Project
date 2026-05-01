@@ -41,16 +41,13 @@ public class GameServer {
 
                 clients.add(client);
                 new Thread(client).start();
-
-                broadcastAllPlayers();
-
-                System.out.println("Player " + playerId + " joined.");
-                System.out.println("Players connected: " + clients.size() + "/" + MAX_PLAYERS);
-
+                System.out.println("Player " + playerId + " joined. (" + clients.size() + "/" + MAX_PLAYERS + ")");
                 broadcast("SERVER Player " + playerId + " joined the game.");
             }
 
-            System.out.println("Game lobby full. All 4 players connected.");
+            System.out.println("Lobby full. Starting countdown.");
+            phase = GamePhase.COUNTDOWN;
+            runCountdown();
 
         } catch (IOException e) {
             e.printStackTrace();
