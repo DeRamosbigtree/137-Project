@@ -9,6 +9,11 @@ public class GameServer {
 
     private static final int PORT = 5000;
     private static final int MAX_PLAYERS = 4;
+    static final int SPEED = 5;
+    static final int PLAYER_SIZE = 30;
+    static final int ARENA_W = 800;
+    static final int ARENA_H = 600;
+    private static final int MATCH_SECONDS = 70;
 
     private ServerSocket serverSocket;
     private ArrayList<ClientHandler> clients = new ArrayList<>();
