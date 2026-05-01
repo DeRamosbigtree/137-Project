@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
-
 public class GameClient {
 
     // int[] = {x, y, isIt, isInvulnerable, isFrozen, isImmune, isInvisible}
@@ -34,12 +33,9 @@ public class GameClient {
     public GameClient() {
         try {
             socket = new Socket(HOST, PORT);
-
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-
             System.out.println("Connected to server.");
-
             new Thread(this::listenToServer).start();
         } catch (IOException e) {
             System.out.println("Could not connect to server.");
@@ -50,14 +46,13 @@ public class GameClient {
     private void listenToServer() {
         try {
             String msg;
-
             while ((msg = in.readLine()) != null) {
                 String[] parts = msg.split(" ");
 
                 switch (parts[0]) {
                     case "ID":
-                    playerId = Integer.parseInt(parts[1]);
-                    System.out.println("My ID: " + playerId);
+                        playerId = Integer.parseInt(parts[1]);
+                        System.out.println("My ID: " + playerId);
                         break;
 
                     case "STATE":
@@ -87,10 +82,10 @@ public class GameClient {
                         break;
 
                     case "SCORE":
-                    for (int i = 1; i < parts.length; i++) {
-                        String[] data = parts[i].split(",");
+                        for (int i = 1; i < parts.length; i++) {
+                            String[] data = parts[i].split(",");
                             if (data.length < 2) continue;
-                        int id = Integer.parseInt(data[0]);
+                            int id = Integer.parseInt(data[0]);
                             if (id >= 0 && id < scores.length) {
                                 scores[id] = Long.parseLong(data[1]);
                             }
@@ -109,7 +104,6 @@ public class GameClient {
                         break;
                 }
             }
-
         } catch (IOException e) {
             System.out.println("Disconnected from server.");
         }
@@ -121,7 +115,7 @@ public class GameClient {
 
     public void sendInput(int dx, int dy) {
         if (out != null) out.println("INPUT " + dx + " " + dy);
-}
+    }
 
     public static void main(String[] args) {
         new GameClient();
