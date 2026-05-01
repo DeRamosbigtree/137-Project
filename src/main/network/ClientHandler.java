@@ -8,9 +8,10 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
 
-    private Socket socket;
-    public int playerId;
-    private GameServer server;
+    // made these final 
+    private final Socket socket;
+    public final int playerId;
+    private final GameServer server;
 
     private BufferedReader in;
     private PrintWriter out;
