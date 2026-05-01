@@ -54,22 +54,59 @@ public class GameClient {
             while ((msg = in.readLine()) != null) {
                 String[] parts = msg.split(" ");
 
-                if (parts[0].equals("ID")) {
+                switch (parts[0]) {
+                    case "ID":
                     playerId = Integer.parseInt(parts[1]);
                     System.out.println("My ID: " + playerId);
-                }
+                        break;
 
-                else if (parts[0].equals("STATE")) {
+                    case "STATE":
+                        for (int i = 1; i < parts.length; i++) {
+                            String[] data = parts[i].split(",");
+                            if (data.length < 8) continue;
+                            int id             = Integer.parseInt(data[0]);
+                            int x              = Integer.parseInt(data[1]);
+                            int y              = Integer.parseInt(data[2]);
+                            int isIt           = Integer.parseInt(data[3]);
+                            int isInvulnerable = Integer.parseInt(data[4]);
+                            int isFrozen       = Integer.parseInt(data[5]);
+                            int isImmune       = Integer.parseInt(data[6]);
+                            int isInvisible    = Integer.parseInt(data[7]);
+                            playerStates.put(id, new int[]{x, y, isIt, isInvulnerable, isFrozen, isImmune, isInvisible});
+                        }
+                        break;
 
+                    case "COUNTDOWN":
+                        countdownValue = Integer.parseInt(parts[1]);
+                        phase = countdownValue > 0 ? "COUNTDOWN" : "PLAYING";
+                        break;
+
+                    case "TIMER":
+                        timeLeft = Integer.parseInt(parts[1]);
+                        if ("LOBBY".equals(phase) || "COUNTDOWN".equals(phase)) phase = "PLAYING";
+                        break;
+
+                    case "SCORE":
                     for (int i = 1; i < parts.length; i++) {
                         String[] data = parts[i].split(",");
-
+                            if (data.length < 2) continue;
                         int id = Integer.parseInt(data[0]);
-                        int x = Integer.parseInt(data[1]);
-                        int y = Integer.parseInt(data[2]);
+                            if (id >= 0 && id < scores.length) {
+                                scores[id] = Long.parseLong(data[1]);
+                            }
+                        }
+                        break;
 
-                        playerStates.put(id, new int[]{x, y});
-                    }
+                    case "WINNER":
+                        winnerId = Integer.parseInt(parts[1]);
+                        phase = "GAME_OVER";
+                        break;
+
+                    case "DISCONNECT":
+                        int disconnectedId = Integer.parseInt(parts[1]);
+                        playerStates.remove(disconnectedId);
+                        System.out.println("Player " + disconnectedId + " disconnected.");
+                        break;
                 }
             }
 
@@ -79,7 +116,7 @@ public class GameClient {
     }
 
     public void send(String message) {
-        out.println(message);
+        if (out != null) out.println(message);
     }
 
     public void sendMove(int dx, int dy) {
