@@ -98,6 +98,13 @@ public class ClientHandler implements Runnable {
 
         } catch (IOException e) {
             System.out.println("Player " + playerId + " disconnected.");
+        } finally {
+            // para walang ghost player if may ma disconnect
+            // para di magcrash if nagtry magread sa stream ng disconnected player
+            server.removeClient(this);
+            try { 
+                socket.close(); 
+            } catch (IOException ignored) {}
         }
     }
 }
