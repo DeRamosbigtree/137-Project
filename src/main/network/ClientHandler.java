@@ -19,6 +19,19 @@ public class ClientHandler implements Runnable {
     public int x;
     public int y;
 
+    // direction inputs. set by client, consumed by server tick
+    //without volatile, may cache the values in CPU registers and the game loop could read stale directions
+    public volatile int dx = 0;
+    public volatile int dy = 0;
+
+    // added other statuses so the server can read and write to them
+    public boolean isIt = false;
+    public boolean isInvulnerable = false;
+    public boolean isFrozen = false;
+    public boolean isImmune = false;
+    public boolean isInvisible = false;
+    public long lastTaggedTime = 0;
+
     public ClientHandler(Socket socket, int playerId, GameServer server) {
         this.socket = socket;
         this.playerId = playerId;
