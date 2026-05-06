@@ -72,45 +72,45 @@ public class GamePanel extends JPanel {
     }
 
     public void updateGame() {
-
-        // timer.update();
-
-        // if (timer.isGameOver()) {
-        //     return;
-        // }
-
         if (mainPlayer == null && client.playerId >= 0 && client.playerId < players.size()) {
             mainPlayer = players.get(client.playerId);
         }
 
-        updateMainPlayer();
+        // Only send inputs while game is active
+        if (client != null && "PLAYING".equals(client.phase)) {
+            updateMainPlayer();
+        }
+
         // updateBots();
-        
         // updatePowerUps();
         // updateEffects();
         // updateTraps(players);
-        
-        for (Player p : players) {
-            p.updateInvulnerability();
-        }
 
         if (client != null) {
+            // Sync positions and state flags from server
             for (Integer id : client.playerStates.keySet()) {
-                if (id < players.size()) {
-                    int[] pos = client.playerStates.get(id);
-                    players.get(id).x = pos[0];
-                    players.get(id).y = pos[1];
+                if (id >= players.size()) continue;
+                int[] s = client.playerStates.get(id);
+                Player p = players.get(id);
+                p.x              = s[0];
+                p.y              = s[1];
+                p.isIt           = s[2] == 1;
+                p.isInvulnerable = s[3] == 1;
+                p.isFrozen       = s[4] == 1;
+                p.isImmune       = s[5] == 1;
+                p.isInvisible    = s[6] == 1;
+            }
+            // Sync scores from server
+            for (Player p : players) {
+                if (p.id < client.scores.length) {
+                    p.timeAsIt = client.scores[p.id];
                 }
             }
         }
-
-        handleTagging();
-        scoreManager.updateScore(getCurrentItPlayer());
     }
 
     private void updateMainPlayer() {
         if (mainPlayer == null) return;
-        if (mainPlayer.isFrozen) return;
 
         int dx = 0;
         int dy = 0;
@@ -121,7 +121,7 @@ public class GamePanel extends JPanel {
         if (keyH.right) dx++;
 
         if (client != null) {
-            client.sendMove(dx, dy);
+            client.sendInput(dx, dy);
         }
 
         if (keyH.space) placeTrap(mainPlayer);
@@ -182,10 +182,28 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        drawPlayers(g);
-        drawUI(g);
-        drawPowerUps(g);
+        String phase = (client != null) ? client.phase : "LOBBY";
 
+        drawPlayers(g);
+
+        switch (phase) {
+            case "LOBBY":
+                drawLobbyOverlay(g);
+                break;
+            case "COUNTDOWN":
+                drawUI(g);
+                drawCountdownOverlay(g);
+                break;
+            case "PLAYING":
+                drawUI(g);
+                drawPowerUps(g);
+                break;
+            case "GAME_OVER":
+                drawUI(g);
+                drawPowerUps(g);
+                scoreManager.drawWinner(g, getWidth(), getHeight(), client.winnerId);
+                break;
+        }
     }
 
     private void drawPlayers(Graphics g) {
@@ -196,7 +214,7 @@ public class GamePanel extends JPanel {
             	if(p.isImmune) {
             		g.setColor(Color.GREEN);
             	}else {
-            		g.setColor(Color.BLUE);
+            	    g.setColor(Color.BLUE);
             	}
                 
             }
@@ -218,15 +236,38 @@ public class GamePanel extends JPanel {
             g.drawString("Current It: Player " + itPlayer.id, 10, 45);
         }
 
-        g.drawString("Week 2: Bots + Collision + Tagging", 10, 70);
-
+        if (client != null) {
+            timer.setTimeLeft(client.timeLeft);
+        }
         timer.draw(g);
 
         scoreManager.drawScores(g, getWidth(), getHeight());
+    }
 
-        if (timer.isGameOver()) { 
-        scoreManager.drawWinner(g, getWidth(), getHeight());
-        }
+    private void drawLobbyOverlay(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 180));
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 28));
+        String text = "Waiting for players...";
+        int w = g.getFontMetrics().stringWidth(text);
+        g.drawString(text, (getWidth() - w) / 2, getHeight() / 2);
+    }
+
+    private void drawCountdownOverlay(Graphics g) {
+        int n = (client != null) ? client.countdownValue : 0;
+        g.setColor(new Color(0, 0, 0, 160));
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font("Arial", Font.BOLD, 96));
+        String big = String.valueOf(n);
+        int bw = g.getFontMetrics().stringWidth(big);
+        g.drawString(big, (getWidth() - bw) / 2, getHeight() / 2 + 20);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 22));
+        String sub = "Game starts in " + n + "...";
+        int sw = g.getFontMetrics().stringWidth(sub);
+        g.drawString(sub, (getWidth() - sw) / 2, getHeight() / 2 + 75);
     }
     
     private void drawPowerUps(Graphics g) {

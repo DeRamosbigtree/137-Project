@@ -8,15 +8,29 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
 
-    private Socket socket;
-    public int playerId;
-    private GameServer server;
+    // made these final 
+    private final Socket socket;
+    public final int playerId;
+    private final GameServer server;
 
     private BufferedReader in;
     private PrintWriter out;
 
     public int x;
     public int y;
+
+    // direction inputs. set by client, consumed by server tick
+    //without volatile, may cache the values in CPU registers and the game loop could read stale directions
+    public volatile int dx = 0;
+    public volatile int dy = 0;
+
+    // added other statuses so the server can read and write to them
+    public boolean isIt = false;
+    public boolean isInvulnerable = false;
+    public boolean isFrozen = false;
+    public boolean isImmune = false;
+    public boolean isInvisible = false;
+    public long lastTaggedTime = 0;
 
     public ClientHandler(Socket socket, int playerId, GameServer server) {
         this.socket = socket;
@@ -55,7 +69,7 @@ public class ClientHandler implements Runnable {
     }
 
     public void send(String message) {
-        out.println(message);
+        if (out != null) out.println(message);
     }
 
     @Override
@@ -66,24 +80,20 @@ public class ClientHandler implements Runnable {
             while ((message = in.readLine()) != null) {
                 String[] parts = message.split(" ");
 
-                if (parts[0].equals("MOVE")) {
-                    int dx = Integer.parseInt(parts[1]);
-                    int dy = Integer.parseInt(parts[2]);
-
-                    x += dx * 5;
-                    y += dy * 5;
-
-                    if (x < 0) x = 0;
-                    if (y < 0) y = 0;
-                    if (x > 800 - 30) x = 800 - 30;
-                    if (y > 600 - 30) y = 600 - 30;
-
-                    server.broadcastAllPlayers();
+                if (parts[0].equals("INPUT") && parts.length == 3) {
+                    dx = Integer.parseInt(parts[1]);
+                    dy = Integer.parseInt(parts[2]);
                 }
             }
-
         } catch (IOException e) {
             System.out.println("Player " + playerId + " disconnected.");
+        } finally {
+            // para walang ghost player if may ma disconnect
+            // para di magcrash if nagtry magread sa stream ng disconnected player
+            server.removeClient(this);
+            try { 
+                socket.close(); 
+            } catch (IOException ignored) {}
         }
     }
 }

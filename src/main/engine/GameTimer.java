@@ -64,6 +64,12 @@ public class GameTimer {
         g.drawString(timerText, timerX, timerY);
     }
 
+    // Set time directly from server broadcast
+    public void setTimeLeft(int seconds) {
+        this.timeLeft = seconds;
+        this.isGameOver = seconds <= 0;
+    }
+
     // getter for checking if the game is over
     public boolean isGameOver() {
         return isGameOver;
