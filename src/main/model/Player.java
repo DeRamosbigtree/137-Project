@@ -1,7 +1,10 @@
 package main.model;
 
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 public class Player {
     public int id;
@@ -14,6 +17,10 @@ public class Player {
     public boolean isImmune = false;
     public boolean isInvisible = false;
     public int trapCharges;
+    
+    // for player sprite
+    //public BufferedImage down1, down2, left1, left2, right1, right2;
+    public String direction = "down";
 
     // Tag cooldown
     public boolean isInvulnerable = false;
@@ -78,5 +85,9 @@ public class Player {
             }
         }
     }
+    
+
+    
+    
 
 }

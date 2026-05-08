@@ -4,18 +4,24 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import main.input.KeyHandler;
 import main.model.Player;
 import main.model.PowerUp;
 import main.model.Trap;
 import main.network.GameClient;
+import tile.TileManager;
 
 public class GamePanel extends JPanel {
-
+	
+	TileManager tileM = new TileManager(this);
     private final ArrayList<Player> players = new ArrayList<>();
     private final KeyHandler keyH = new KeyHandler();
 
@@ -31,12 +37,19 @@ public class GamePanel extends JPanel {
     private final Random rand = new Random();
 
     private long lastSpawn = 0;
-    private final long spawnDelay = 3000; // 7 seconds
+    private final long spawnDelay = 3000; //  seconds
+    public final int tileSize = 30;
+    public final int maxScreenCol = 30;
+    public final int maxScreenRow = 20;
+    
+    // for player sprite
+    public BufferedImage down1, down2, left1, left2, right1, right2;
+    //public String direction;
     
     
 
     public GamePanel() {
-        this.setPreferredSize(new Dimension(800, 600));
+        this.setPreferredSize(new Dimension(900, 600));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);
@@ -115,10 +128,22 @@ public class GamePanel extends JPanel {
         int dx = 0;
         int dy = 0;
 
-        if (keyH.up) dy--;
-        if (keyH.down) dy++;
-        if (keyH.left) dx--;
-        if (keyH.right) dx++;
+        if (keyH.up) { 
+        	dy--;
+        	mainPlayer.direction = "down";
+        }
+        if (keyH.down) {
+        	dy++;
+        	mainPlayer.direction = "down";
+        }
+        if (keyH.left) {
+        	dx--;
+        	mainPlayer.direction = "left";
+        }
+        if (keyH.right) {
+        	dx++;
+        	mainPlayer.direction = "right";
+        }
 
         if (client != null) {
             client.sendInput(dx, dy);
@@ -180,11 +205,14 @@ public class GamePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+    	
         super.paintComponent(g);
-
+        Graphics2D g2 = (Graphics2D)g;
         String phase = (client != null) ? client.phase : "LOBBY";
-
-        drawPlayers(g);
+        
+        tileM.draw(g2);
+        
+        drawPlayers(g2);
 
         switch (phase) {
             case "LOBBY":
@@ -205,8 +233,23 @@ public class GamePanel extends JPanel {
                 break;
         }
     }
+    
+    public void getPlayerImage(){
+    	try {
+    		down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+    		down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
+    		left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
+    		left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
+    		right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
+    		right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    }
 
-    private void drawPlayers(Graphics g) {
+    private void drawPlayers(Graphics2D g) {
+    	BufferedImage image = down1;
+    	
         for (Player p : players) {
             if (p.isIt) {
                 g.setColor(Color.RED);
@@ -220,7 +263,24 @@ public class GamePanel extends JPanel {
             }
 
             g.fillRect(p.x, p.y, p.size, p.size);
+        	
+//        	switch(p.direction) {
+//        	case "up":
+//        		image = down1;
+//        		break;
+//        	case "down":
+//        		image = down1;
+//        		break;
+//        	case "left":
+//        		image = left1;
+//        		break;
+//        	case "right":
+//        		image = right1;
+//        		break;
+//        	}
+//        	g.drawImage(image, p.x, p.y, tileSize, tileSize,null);
 
+        	g.drawImage(image, p.x, p.y, tileSize, tileSize,null);
             g.setColor(Color.WHITE);
             g.drawString("P" + p.id, p.x + 8, p.y + 18);
         }
