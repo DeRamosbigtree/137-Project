@@ -53,6 +53,8 @@ public class GamePanel extends JPanel {
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);
+        
+        getPlayerImage();
 
         try {
             client = new GameClient();
@@ -251,36 +253,35 @@ public class GamePanel extends JPanel {
     	BufferedImage image = down1;
     	
         for (Player p : players) {
-            if (p.isIt) {
-                g.setColor(Color.RED);
-            } else {
-            	if(p.isImmune) {
-            		g.setColor(Color.GREEN);
-            	}else {
-            	    g.setColor(Color.BLUE);
-            	}
-                
-            }
-
-            g.fillRect(p.x, p.y, p.size, p.size);
+//            if (p.isIt) {
+//                g.setColor(Color.RED);
+//            } else {
+//            	if(p.isImmune) {
+//            		g.setColor(Color.GREEN);
+//            	}else {
+//            	    g.setColor(Color.BLUE);
+//            	}
+//                
+//            }
+//
+//            g.fillRect(p.x, p.y, p.size, p.size);
         	
-//        	switch(p.direction) {
-//        	case "up":
-//        		image = down1;
-//        		break;
-//        	case "down":
-//        		image = down1;
-//        		break;
-//        	case "left":
-//        		image = left1;
-//        		break;
-//        	case "right":
-//        		image = right1;
-//        		break;
-//        	}
-//        	g.drawImage(image, p.x, p.y, tileSize, tileSize,null);
-
+        	switch(p.direction) {
+        	case "up":
+        		image = down1;
+        		break;
+        	case "down":
+        		image = down1;
+        		break;
+        	case "left":
+        		image = left1;
+        		break;
+        	case "right":
+        		image = right1;
+        		break;
+        	}
         	g.drawImage(image, p.x, p.y, tileSize, tileSize,null);
+
             g.setColor(Color.WHITE);
             g.drawString("P" + p.id, p.x + 8, p.y + 18);
         }
