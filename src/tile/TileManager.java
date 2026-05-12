@@ -1,6 +1,7 @@
 package tile;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +14,8 @@ import main.engine.GamePanel;
 public class TileManager {
 	
 	GamePanel gp;
-	Tile[] tile;
-	int mapTileNum[][];
+	public Tile[] tile;
+	public int mapTileNum[][];
 
 	public TileManager(GamePanel gp) {
 		this.gp = gp;
@@ -39,18 +40,22 @@ public class TileManager {
 			
 			tile[3] = new Tile();
 			tile[3].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bush1.png"));
+			tile[3].collision = true;
 			
 			tile[4] = new Tile();
 			tile[4].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_horizontal.png"));
+			tile[4].collision = true;
 			
 			tile[5] = new Tile();
 			tile[5].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_corner.png"));
 			
 			tile[6] = new Tile();
 			tile[6].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_vertical.png"));
+			tile[6].collision = true;
 			
 			tile[7] = new Tile();
 			tile[7].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_vertical2.png"));
+			tile[7].collision = true;
 			
 			tile[8] = new Tile();
 			tile[8].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_corner2.png"));
@@ -112,4 +117,8 @@ public class TileManager {
 			}
         }
 	}
+	
+    public Rectangle getBounds() {
+        return new Rectangle(0, 0, gp.tileSize, gp.tileSize); // slightly smaller than a whole tile
+    }
 }

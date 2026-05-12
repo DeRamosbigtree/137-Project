@@ -2,7 +2,9 @@ package tile;
 
 import java.awt.image.BufferedImage;
 
-public class Tile {
+import main.model.Entity;
+
+public class Tile extends Entity {
 	
 	public BufferedImage image;
 	public boolean collision = false;

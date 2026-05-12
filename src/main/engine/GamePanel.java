@@ -19,31 +19,34 @@ import main.model.Trap;
 import main.network.GameClient;
 import tile.TileManager;
 
+
 public class GamePanel extends JPanel {
 	
 	TileManager tileM = new TileManager(this);
+	ObstacleCollisionChecker oChecker = new ObstacleCollisionChecker(this);
     private final ArrayList<Player> players = new ArrayList<>();
     private final KeyHandler keyH = new KeyHandler();
+    
 
     private Player mainPlayer;
     private GameClient client;
 
     private final GameTimer timer = new GameTimer(70);
+    private boolean spacePressed = false;
 
     private ScoreManager scoreManager;
     
-    private final ArrayList<PowerUp> powerUps = new ArrayList<>();
-    private final ArrayList<Trap> traps = new ArrayList<>();
+    //private final ArrayList<PowerUp> powerUps = new ArrayList<>();
     private final Random rand = new Random();
 
-    private long lastSpawn = 0;
-    private final long spawnDelay = 3000; //  seconds
+    //private long lastSpawn = 0;
+    //private final long spawnDelay = 3000; //  seconds
     public final int tileSize = 30;
     public final int maxScreenCol = 30;
     public final int maxScreenRow = 20;
     
     // for player sprite
-    public BufferedImage down1, down2, left1, left2, right1, right2;
+    public BufferedImage down1, down2, left1, left2, right1, right2, frozen;
     //public String direction;
     
     
@@ -129,21 +132,33 @@ public class GamePanel extends JPanel {
 
         int dx = 0;
         int dy = 0;
-
+        
+        mainPlayer.collisionOn = false;
+        mainPlayer.direction = "down";
+        oChecker.checkTile(mainPlayer);
+        
         if (keyH.up) { 
-        	dy--;
+        	if(mainPlayer.collisionOn == false) {
+        		dy--;
+        	}
         	mainPlayer.direction = "down";
         }
         if (keyH.down) {
-        	dy++;
+        	if(mainPlayer.collisionOn == false) {
+        		dy++;
+        	}
         	mainPlayer.direction = "down";
         }
         if (keyH.left) {
-        	dx--;
+        	if(mainPlayer.collisionOn == false) {
+        		dx--;
+        	}
         	mainPlayer.direction = "left";
         }
         if (keyH.right) {
-        	dx++;
+        	if(mainPlayer.collisionOn == false) {
+        		dx++;
+        	}
         	mainPlayer.direction = "right";
         }
 
@@ -194,7 +209,7 @@ public class GamePanel extends JPanel {
 
             return; // ensure ONLY ONE tag happens
         }
-    }
+    }  
 
     private Player getCurrentItPlayer() {
         for (Player p : players) {
@@ -244,6 +259,7 @@ public class GamePanel extends JPanel {
     		left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
     		right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
     		right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+    		frozen = ImageIO.read(getClass().getResourceAsStream("/player/frozen.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
@@ -265,21 +281,35 @@ public class GamePanel extends JPanel {
 //            }
 //
 //            g.fillRect(p.x, p.y, p.size, p.size);
+        	switch(p.id) {
+        	case 0:
+        		switch(p.direction) {
+            	case "up":
+            		image = down1;
+            		break;
+            	case "down":
+            		image = down1;
+            		break;
+            	case "left":
+            		image = left1;
+            		break;
+            	case "right":
+            		image = right1;
+            		break;
+            	}
+        		break;
+        	case 1:
+        		image = frozen;
+        		break;
+        	case 2:
+        		image = frozen;
+        		break;
+        	case 3:
+        		image = frozen;
+        		break;
         	
-        	switch(p.direction) {
-        	case "up":
-        		image = down1;
-        		break;
-        	case "down":
-        		image = down1;
-        		break;
-        	case "left":
-        		image = left1;
-        		break;
-        	case "right":
-        		image = right1;
-        		break;
         	}
+        	
         	g.drawImage(image, p.x, p.y, tileSize, tileSize,null);
 
             g.setColor(Color.WHITE);
@@ -332,7 +362,9 @@ public class GamePanel extends JPanel {
     }
     
     private void drawPowerUps(Graphics g) {
-        for (PowerUp p : powerUps) {
+    	if (client == null) return;
+    	
+        for (PowerUp p : client.powerUps) {
             switch (p.type) {
                 case SPEED: g.setColor(Color.YELLOW); break;
                 case FREEZE: g.setColor(Color.CYAN); break;
@@ -344,147 +376,21 @@ public class GamePanel extends JPanel {
         
         // draw traps
         g.setColor(Color.MAGENTA);
-        for (Trap t : traps) {
+        for (Trap t : client.traps) {
             g.fillRect(t.x, t.y, t.size, t.size);
         }
     }
     
-    // Power-up
-    // Track active effects per player
-    public static class Effect {
-        PowerUp.Type type;
-        long endTime;
-
-        Effect(PowerUp.Type type, long duration) {
-            this.type = type;
-            this.endTime = System.currentTimeMillis() + duration;
-        }
-    }
-
-    private final java.util.Map<Player, java.util.List<Effect>> activeEffects = new java.util.HashMap<>();
-    
-    private void applyEffect(Player player, PowerUp.Type type) {
-
-        activeEffects.putIfAbsent(player, new ArrayList<>());
-
-        switch (type) {
-            case SPEED:
-                player.speed = 6 ; // boosted speed by 50%
-                activeEffects.get(player).add(new Effect(type, 3000));
-                break;
-
-            case FREEZE:
-                player.trapCharges += 1;
-                break;
-            case SHIELD:
-            	player.isImmune = true;
-            	activeEffects.get(player).add(new Effect(type, 10000));
-            	break;
-            case GHOST:
-            	player.isInvisible = true;
-            	activeEffects.get(player).add(new Effect(type, 4000));
-            	break;
-        }
-    }
-    
-    private void spawnPowerUp() {
-        int width = Math.max(getWidth(), 800);
-        int height = Math.max(getHeight(), 600);
-
-        int x = rand.nextInt(width - 20);
-        int y = rand.nextInt(height - 20);
-        powerUps.add(new PowerUp(x, y, PowerUp.getRandomType()));
-    }
-    
-    private void updatePowerUps() {
-        long now = System.currentTimeMillis();
-
-        // allow spawning of power up every 7 seconds 
-        if (now - lastSpawn > spawnDelay) {
-            spawnPowerUp();
-            lastSpawn = now;
-        }
-
-        // collision
-        Iterator<PowerUp> it = powerUps.iterator();
-
-        while (it.hasNext()) {
-            PowerUp p = it.next();
-
-            for (Player player : players) {
-                if (player.getBounds().intersects(p.getBounds())) {
-
-                    applyEffect(player, p.type);
-                    it.remove();
-                    break;
-                }
-            }
-        }
-    }
-    
     public void placeTrap(Player player) {
-        if (player.trapCharges <= 0) return;
 
-        traps.add(new Trap(player.x, player.y, player));
-        player.trapCharges--;
-    }
-    
-    private void updateTraps(ArrayList<Player> players) {
-        Iterator<Trap> it = traps.iterator();
-
-        while (it.hasNext()) {
-            Trap t = it.next();
-
-            for (Player p : players) {
-                if (p == t.owner) continue;
-
-                if (p.getBounds().intersects(t.getBounds())) {
-
-                    // apply freeze effect to player (2 seconds)
-                    activeEffects.putIfAbsent(p, new ArrayList<>());
-                    activeEffects.get(p).add(new Effect(PowerUp.Type.FREEZE, 2000));
-
-                    it.remove();
-                    break;
-                }
+        if (keyH.space) {
+            if (!spacePressed) {
+                client.send("TRAP");
+                spacePressed = true;
             }
+        } else {
+            spacePressed = false; // reset when key is released
         }
     }
     
-    private void updateEffects() {
-        long now = System.currentTimeMillis();
-
-        for (Player player : players) {
-
-            // skip if no effects
-            if (!activeEffects.containsKey(player)) continue;
-
-            java.util.List<Effect> effects = activeEffects.get(player);
-
-            Iterator<Effect> it = effects.iterator();
-
-            boolean hasSpeed = false;
-            boolean isFrozen = false;
-            boolean isImmune = false;
-            boolean isInvisible = false;
-
-            while (it.hasNext()) {
-                Effect e = it.next();
-
-                if (now > e.endTime) {
-                    it.remove();
-                } else {
-                    if (e.type == PowerUp.Type.SPEED) hasSpeed = true;
-                    if (e.type == PowerUp.Type.FREEZE) isFrozen = true;
-                    if( e.type == PowerUp.Type.SHIELD) isImmune = true;
-                    if( e.type == PowerUp.Type.GHOST) isInvisible = true;
-                }
-            }
-
-            player.speed = hasSpeed ? 6 : 4;
-            player.isFrozen = isFrozen;
-            //player.isImmune = isImmune;
-            player.isInvisible = isInvisible;
-        }
-    }
 }

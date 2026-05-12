@@ -4,14 +4,19 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import main.model.PowerUp;
+import main.model.Trap; 
+import java.awt.Rectangle;
+import java.util.Iterator;
+import java.util.Random;
 
 public class GameServer {
 
     private static final int PORT = 5000;
     private static final int MAX_PLAYERS = 4;
-    static final int SPEED = 5;
+    //static final int SPEED = 5;
     static final int PLAYER_SIZE = 30;
-    static final int ARENA_W = 800;
+    static final int ARENA_W = 900;
     static final int ARENA_H = 600;
     private static final int MATCH_SECONDS = 70;
 
@@ -26,6 +31,11 @@ public class GameServer {
     private final long[] scores = new long[MAX_PLAYERS];
     private long lastTickTime;
     private long lastScoreBroadcast;
+    
+    private final ArrayList<PowerUp> powerUps = new ArrayList<>();
+    private final ArrayList<Trap> traps = new ArrayList<>();
+    private long lastPowerUpSpawn = 0;
+    private final Random rand = new Random();
 
     public GameServer() {
         try {
@@ -94,7 +104,10 @@ public class GameServer {
 
                             updatePlayers();
                             updateInvulnerability();
+                            updateEffects();
                             handleTagging();
+                            spawnAndCheckPowerUps();
+                            checkTraps();
                             updateTimerAndScores(delta);
                         }
                         broadcastAllPlayers();
@@ -111,8 +124,8 @@ public class GameServer {
     private void updatePlayers() {
         for (ClientHandler c : clients) {
             if (c.isFrozen) continue;
-            c.x += c.dx * SPEED;
-            c.y += c.dy * SPEED;
+            c.x += c.dx * c.speed;
+            c.y += c.dy * c.speed;
             if (c.x < 0) c.x = 0;
             if (c.y < 0) c.y = 0;
             if (c.x > ARENA_W - PLAYER_SIZE) c.x = ARENA_W - PLAYER_SIZE;
@@ -248,5 +261,120 @@ public class GameServer {
 
     public static void main(String[] args) {
         new GameServer();
+    }
+    
+    private void updateEffects() {
+        long now = System.currentTimeMillis();
+        for (ClientHandler c : clients) {
+            c.speed = (now < c.speedEndTime) ? 8 : 5;
+            c.isFrozen = (now < c.freezeEndTime);
+            c.isImmune = (now < c.immuneEndTime);
+            c.isInvisible = (now < c.invisibleEndTime);
+        }
+    }
+    
+    private void spawnAndCheckPowerUps() {
+        long now = System.currentTimeMillis();
+        boolean changed = false;
+
+        // spawn logic (every 3 seconds)
+        if (now - lastPowerUpSpawn > 3000) {
+            int x = rand.nextInt(ARENA_W - 20);
+            int y = rand.nextInt(ARENA_H - 20);
+            powerUps.add(new PowerUp(x, y, PowerUp.getRandomType()));
+            lastPowerUpSpawn = now;
+            changed = true;
+        }
+
+        // collision logic
+        Iterator<PowerUp> it = powerUps.iterator();
+        while (it.hasNext()) {
+            PowerUp p = it.next();
+            Rectangle pBounds = new Rectangle(p.x, p.y, p.size, p.size);
+
+            for (ClientHandler c : clients) {
+                Rectangle cBounds = new Rectangle(c.x, c.y, PLAYER_SIZE, PLAYER_SIZE);
+                if (pBounds.intersects(cBounds)) {
+                    applyEffect(c, p.type);
+                    it.remove();
+                    changed = true;
+                    break;
+                }
+            }
+        }
+
+        if (changed) {
+            broadcastPowerUps();
+        }
+    }
+    
+    private void applyEffect(ClientHandler c, PowerUp.Type type) {
+        long now = System.currentTimeMillis();
+        switch (type) {
+            case SPEED: c.speedEndTime = now + 3000; break;
+            case FREEZE: c.trapCharges += 1; break;
+            case SHIELD: c.immuneEndTime = now + 10000; c.isImmune = true; break;
+            case GHOST: c.invisibleEndTime = now + 4000; c.isInvisible = true; break;
+        }
+    }
+
+    private void broadcastPowerUps() {
+        StringBuilder sb = new StringBuilder("POWERUPS");
+        for (PowerUp p : powerUps) {
+            sb.append(" ").append(p.x).append(",").append(p.y).append(",").append(p.type.name());
+        }
+        broadcast(sb.toString());
+    }
+    
+    public synchronized void placeTrap(ClientHandler client) {
+        // allow trap placement if they have charges and aren't currently frozen
+        if (client.trapCharges > 0 && !client.isFrozen) {
+            traps.add(new Trap(client.x, client.y, client.playerId));
+            client.trapCharges--;
+            broadcastTraps();
+        }
+    }
+    
+    private void checkTraps() {
+        long now = System.currentTimeMillis();
+        boolean changed = false;
+        Iterator<Trap> it = traps.iterator();
+        
+        while (it.hasNext()) {
+            Trap t = it.next();
+            Rectangle tBounds = new Rectangle(t.x, t.y, t.size, t.size);
+            
+            for (ClientHandler c : clients) {
+                if (c.playerId == t.ownerId) continue; // don't trigger your own trap
+                if (c.isFrozen || c.isInvulnerable) continue; 
+                
+                Rectangle cBounds = new Rectangle(c.x, c.y, PLAYER_SIZE, PLAYER_SIZE);
+                if (tBounds.intersects(cBounds)) {
+                    // apply freeze or consume shield
+                    if (c.isImmune) {
+                        c.isImmune = false;
+                        c.immuneEndTime = 0; // consume the shield
+                    } else {
+                        c.isFrozen = true;
+                        c.freezeEndTime = now + 2000; // Freeze for 2 seconds
+                    }
+                    it.remove();
+                    changed = true;
+                    break; // trap is destroyed, move to next trap
+                }
+            }
+        }
+        
+        if (changed) {
+            broadcastTraps();
+        }
+    }
+
+    private void broadcastTraps() { 
+        StringBuilder sb = new StringBuilder("TRAPS");
+        for (Trap t : traps) {
+            sb.append(" ").append(t.x).append(",").append(t.y).append(",").append(t.ownerId);
+        }
+        broadcast(sb.toString());
     }
 }

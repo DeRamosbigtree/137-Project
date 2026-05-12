@@ -7,6 +7,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import main.model.PowerUp;
+import main.model.Trap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.List;
 
 public class GameClient {
 
@@ -19,6 +23,8 @@ public class GameClient {
     public volatile int countdownValue = 0;
     public volatile int winnerId = -1;
     public final long[] scores = new long[4];
+    public final List<PowerUp> powerUps = new CopyOnWriteArrayList<>(); // to prevent errors if thread updates while drawing thread is reading
+    public final List<Trap> traps = new CopyOnWriteArrayList<>();
 
     private static final String HOST = "localhost";
     private static final int PORT = 5000;
@@ -91,6 +97,33 @@ public class GameClient {
                             }
                         }
                         break;
+                        
+                    case "POWERUPS":
+                        powerUps.clear();
+                        for (int i = 1; i < parts.length; i++) {
+                            String[] pData = parts[i].split(",");
+                            if (pData.length == 3) {
+                                int px = Integer.parseInt(pData[0]);
+                                int py = Integer.parseInt(pData[1]);
+                                PowerUp.Type pType = PowerUp.Type.valueOf(pData[2]);
+                                powerUps.add(new PowerUp(px, py, pType));
+                            }
+                        }
+                        break;
+                    
+                    case "TRAPS":
+                        traps.clear();
+                        for (int i = 1; i < parts.length; i++) {
+                            String[] tData = parts[i].split(",");
+                            if (tData.length == 3) {
+                                int tx = Integer.parseInt(tData[0]);
+                                int ty = Integer.parseInt(tData[1]);
+                                int ownerId = Integer.parseInt(tData[2]);
+                                traps.add(new Trap(tx, ty, ownerId));
+                            }
+                        }
+                        break;    
+                    
 
                     case "WINNER":
                         winnerId = Integer.parseInt(parts[1]);
