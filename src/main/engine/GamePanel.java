@@ -21,8 +21,9 @@ import main.model.Trap;
 import main.network.GameClient;
 import tile.TileManager;
 
-
 public class GamePanel extends JPanel {
+    private String serverHost;
+    private boolean isHost;
 	
 	TileManager tileM = new TileManager(this);
 	ObstacleCollisionChecker oChecker = new ObstacleCollisionChecker(this);
@@ -58,9 +59,12 @@ public class GamePanel extends JPanel {
     //public String direction;
     
     
+    
+    public GamePanel(String host) {
+        this.serverHost = host;
+        this.isHost = host.equals("localhost");
 
-    public GamePanel() {
-        this.setPreferredSize(new Dimension(900, 600));
+        this.setPreferredSize(new Dimension(800, 600));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);
@@ -69,7 +73,7 @@ public class GamePanel extends JPanel {
         getPowerupImage();
 
         try {
-            client = new GameClient();
+            client = new GameClient(host);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -84,6 +88,33 @@ public class GamePanel extends JPanel {
         }
 
         this.scoreManager = new ScoreManager(players);
+    }
+
+    private void drawServerInfo(Graphics g) {
+        g.setColor(Color.LIGHT_GRAY);
+        g.setFont(new Font("Arial", Font.BOLD, 14));
+
+        String role = isHost ? "HOST" : "CLIENT";
+        String idText = "Player ID: ";
+
+        if (client != null && client.playerId >= 0) {
+            idText += client.playerId;
+        } else {
+            idText += "Waiting...";
+        }
+
+        String serverText = "Mode: " + role + " | Server: " + serverHost;
+        String phaseText = "Phase: " + ((client != null) ? client.phase : "LOBBY");
+        String connectedText = "Players connected: " + ((client != null) ? client.playerStates.size() : 0) + "/4";
+
+        g.drawString(serverText, 10, 560);
+        g.drawString(idText, 10, 580);
+
+        int phaseWidth = g.getFontMetrics().stringWidth(phaseText);
+        int connectedWidth = g.getFontMetrics().stringWidth(connectedText);
+
+        g.drawString(phaseText, getWidth() - phaseWidth - 10, 560);
+        g.drawString(connectedText, getWidth() - connectedWidth - 10, 580);
     }
 
     private void initializePlayers() {
@@ -267,6 +298,12 @@ public class GamePanel extends JPanel {
                 drawPowerUps(g);
                 scoreManager.drawWinner(g, getWidth(), getHeight(), client.winnerId);
                 break;
+        }
+        if (
+            phase.equals("LOBBY")
+            || phase.equals("COUNTDOWN")
+        ) {
+            drawServerInfo(g);
         }
     }
     
