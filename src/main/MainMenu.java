@@ -25,6 +25,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
         addKeyListener(this);
 
         setFocusable(true);
+        requestFocusInWindow();
 
         hostButton = new Rectangle(300, 250, 200, 50);
         joinButton = new Rectangle(300, 330, 200, 50);
@@ -159,6 +160,8 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
     @Override
     public void mouseClicked(MouseEvent e) {
 
+        requestFocusInWindow();
+
         Point p = e.getPoint();
 
         if (hostButton.contains(p)) {
@@ -178,8 +181,8 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
         char c = e.getKeyChar();
 
         if (
-                Character.isDigit(c)
-                || c == '.'
+            Character.isLetterOrDigit(c)
+            || c == '.'
         ) {
             ipInput += c;
         }
@@ -200,6 +203,14 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
         }
 
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+
+            if (ipInput.isBlank()) {
+
+                message = "Please enter a valid server IP.";
+                repaint();
+
+                return;
+            }
 
             enteringIP = false;
 
