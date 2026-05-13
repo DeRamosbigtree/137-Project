@@ -50,7 +50,8 @@ public class GamePanel extends JPanel {
     // for player sprite
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2, frozen,
     					 p1up1, p1up2, p1down1, p1down2, p1left1, p1left2, p1right1, p1right2,
-    					 p1down, p2down, p3down,
+    					 p2up1, p2up2, p2down1, p2down2, p2left1, p2left2, p2right1, p2right2,
+    					 p2down, p3down,
     					 speed, freeze, shield, ghost, barrier, trap;
     public int spriteCounter = 0;
 	public int spriteNum = 1;
@@ -368,8 +369,47 @@ public class GamePanel extends JPanel {
                 	}
         		}
         		break;
-        	case 2:
-        		image = p2down;
+        	// player 2 
+        	case 2: 
+        		if(p.isFrozen) {
+        			image = frozen;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		if(spriteNum == 1) {
+                			image = p2up1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2up1;
+                		}
+                		
+                		break;
+                	case "down":
+                		if(spriteNum == 1) {
+                			image = p2down1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2down1;
+                		}
+                		break;
+                	case "left":
+                		if(spriteNum == 1) {
+                			image = p2left1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2left1;
+                		}
+                		break;
+                	case "right":
+                		if(spriteNum == 1) {
+                			image = p2right1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2right1;
+                		}
+                		break;
+        			}
+        		}
         		break;
         	case 3:
         		//temptilesize = 40;
@@ -508,7 +548,10 @@ public class GamePanel extends JPanel {
     		p1right1 = ImageIO.read(getClass().getResourceAsStream("/p1/right1.png"));
     		
     		// player1 sprites
-    		p2down = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
+    		p2up1 = ImageIO.read(getClass().getResourceAsStream("/p2/up1.png"));
+    		p2down1 = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
+    		p2left1 = ImageIO.read(getClass().getResourceAsStream("/p2/left1.png"));
+    		p2right1 = ImageIO.read(getClass().getResourceAsStream("/p2/right1.png"));
     		
     		// player1 sprites
     		p3down = ImageIO.read(getClass().getResourceAsStream("/p3/player4.png"));
