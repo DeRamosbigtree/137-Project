@@ -525,12 +525,12 @@ public class GamePanel extends JPanel {
     
     public void getPowerupImage(){
     	try {
-    		speed = ImageIO.read(getClass().getResourceAsStream("/powerups/speed.png"));
-    		freeze = ImageIO.read(getClass().getResourceAsStream("/powerups/freeze.png"));
-    		shield = ImageIO.read(getClass().getResourceAsStream("/powerups/shield.png"));
-    		ghost = ImageIO.read(getClass().getResourceAsStream("/powerups/ghost.png"));
-    		barrier = ImageIO.read(getClass().getResourceAsStream("/powerups/barrier.png"));
-    		trap = ImageIO.read(getClass().getResourceAsStream("/powerups/trap.png"));
+    		speed = ImageIO.read(getClass().getResourceAsStream("/res/powerups/speed.png"));
+    		freeze = ImageIO.read(getClass().getResourceAsStream("/res/powerups/freeze.png"));
+    		shield = ImageIO.read(getClass().getResourceAsStream("/res/powerups/shield.png"));
+    		ghost = ImageIO.read(getClass().getResourceAsStream("/res/powerups/ghost.png"));
+    		barrier = ImageIO.read(getClass().getResourceAsStream("//respowerups/barrier.png"));
+    		trap = ImageIO.read(getClass().getResourceAsStream("/res/powerups/trap.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
@@ -569,29 +569,29 @@ public class GamePanel extends JPanel {
     public void getPlayerImage(){
     	try {
     		// player0 sprites
-    		up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
-    		down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
-    		down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
-    		left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
-    		left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
-    		right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
-    		right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
-    		frozen = ImageIO.read(getClass().getResourceAsStream("/player/frozen.png"));
+    		up1 = ImageIO.read(getClass().getResourceAsStream("/res/player/up1.png"));
+    		down1 = ImageIO.read(getClass().getResourceAsStream("/res/player/down1.png"));
+    		down2 = ImageIO.read(getClass().getResourceAsStream("/res/player/down2.png"));
+    		left1 = ImageIO.read(getClass().getResourceAsStream("/res/player/left1.png"));
+    		left2 = ImageIO.read(getClass().getResourceAsStream("/res/player/left2.png"));
+    		right1 = ImageIO.read(getClass().getResourceAsStream("/res/player/right1.png"));
+    		right2 = ImageIO.read(getClass().getResourceAsStream("/res/player/right2.png"));
+    		frozen = ImageIO.read(getClass().getResourceAsStream("/res/player/frozen.png"));
     		
     		// player1 sprites
-    		p1up1 = ImageIO.read(getClass().getResourceAsStream("/p1/up1.png"));
-    		p1down1 = ImageIO.read(getClass().getResourceAsStream("/p1/player.png"));
-    		p1left1 = ImageIO.read(getClass().getResourceAsStream("/p1/left1.png"));
-    		p1right1 = ImageIO.read(getClass().getResourceAsStream("/p1/right1.png"));
+    		p1up1 = ImageIO.read(getClass().getResourceAsStream("/res/p1/up1.png"));
+    		p1down1 = ImageIO.read(getClass().getResourceAsStream("/res/p1/player.png"));
+    		p1left1 = ImageIO.read(getClass().getResourceAsStream("/res/p1/left1.png"));
+    		p1right1 = ImageIO.read(getClass().getResourceAsStream("/res/p1/right1.png"));
     		
     		// player1 sprites
-    		p2up1 = ImageIO.read(getClass().getResourceAsStream("/p2/up1.png"));
-    		p2down1 = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
-    		p2left1 = ImageIO.read(getClass().getResourceAsStream("/p2/left1.png"));
-    		p2right1 = ImageIO.read(getClass().getResourceAsStream("/p2/right1.png"));
+    		p2up1 = ImageIO.read(getClass().getResourceAsStream("/res/p2/up1.png"));
+    		p2down1 = ImageIO.read(getClass().getResourceAsStream("/res/p2/player.png"));
+    		p2left1 = ImageIO.read(getClass().getResourceAsStream("/res/p2/left1.png"));
+    		p2right1 = ImageIO.read(getClass().getResourceAsStream("/res/p2/right1.png"));
     		
     		// player1 sprites
-    		p3down = ImageIO.read(getClass().getResourceAsStream("/p3/player4.png"));
+    		p3down = ImageIO.read(getClass().getResourceAsStream("/res/p3/player4.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
