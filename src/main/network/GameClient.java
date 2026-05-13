@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GameClient {
 
@@ -20,7 +20,7 @@ public class GameClient {
     public volatile int winnerId = -1;
     public final long[] scores = new long[4];
 
-    private static final String HOST = "localhost";
+    // private static final String HOST = "localhost";
     private static final int PORT = 5000;
     public static GameClient client;
 
@@ -30,17 +30,38 @@ public class GameClient {
 
     public int playerId = -1;
 
-    public GameClient() {
+    // public GameClient() {
+    //     try {
+    //         socket = new Socket(HOST, PORT);
+    //         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    //         out = new PrintWriter(socket.getOutputStream(), true);
+    //         System.out.println("Connected to server.");
+    //         new Thread(this::listenToServer).start();
+    //     } catch (IOException e) {
+    //         System.out.println("Could not connect to server.");
+    //         e.printStackTrace();
+    //     }
+    // }
+
+    public GameClient(String host) {
         try {
-            socket = new Socket(HOST, PORT);
+            socket = new Socket(host, PORT);
+
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            System.out.println("Connected to server.");
+
+            System.out.println("Connected to server: " + host);
+
             new Thread(this::listenToServer).start();
+
         } catch (IOException e) {
             System.out.println("Could not connect to server.");
             e.printStackTrace();
         }
+    }
+
+    public GameClient() {
+        this("localhost");
     }
 
     private void listenToServer() {
@@ -117,7 +138,18 @@ public class GameClient {
         if (out != null) out.println("INPUT " + dx + " " + dy);
     }
 
+    // public static void main(String[] args) {
+    //     new GameClient();
+    // }
+
     public static void main(String[] args) {
-        new GameClient();
+
+        String host = "localhost";
+
+        if (args.length > 0) {
+            host = args[0];
+        }
+
+        new GameClient(host);
     }
 }

@@ -1,8 +1,8 @@
 package main;
 
 import javax.swing.JFrame;
-import main.engine.GamePanel;
 import main.engine.GameLoop;
+import main.engine.GamePanel;
 
 public class Game {
     public static void main(String[] args) {
@@ -11,7 +11,7 @@ public class Game {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
 
-        GamePanel panel = new GamePanel();
+        GamePanel panel = new GamePanel("localhost");
         window.add(panel);
         window.pack();
 

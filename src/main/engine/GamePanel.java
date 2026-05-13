@@ -35,14 +35,14 @@ public class GamePanel extends JPanel {
     
     
 
-    public GamePanel() {
+    public GamePanel(String host) {
         this.setPreferredSize(new Dimension(800, 600));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);
 
         try {
-            client = new GameClient();
+            client = new GameClient(host);
         } catch (Exception e) {
             e.printStackTrace();
         }
