@@ -64,7 +64,7 @@ public class GamePanel extends JPanel {
         this.serverHost = host;
         this.isHost = host.equals("localhost");
 
-        this.setPreferredSize(new Dimension(800, 600));
+        this.setPreferredSize(new Dimension(900, 600));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);

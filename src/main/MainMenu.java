@@ -19,7 +19,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
     public MainMenu() {
 
-        setPreferredSize(new Dimension(800, 600));
+        setPreferredSize(new Dimension(900, 600));
         setBackground(Color.BLACK);
 
         addMouseListener(this);
