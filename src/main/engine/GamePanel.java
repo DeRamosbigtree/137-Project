@@ -1,6 +1,8 @@
 package main.engine;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -46,7 +48,9 @@ public class GamePanel extends JPanel {
     public final int maxScreenRow = 20;
     
     // for player sprite
-    public BufferedImage down1, down2, left1, left2, right1, right2, frozen;
+    public BufferedImage down1, down2, left1, left2, right1, right2, frozen,
+    					 p1down, p2down, p3down,
+    					 speed, freeze, shield, ghost, barrier, trap;
     //public String direction;
     
     
@@ -58,6 +62,7 @@ public class GamePanel extends JPanel {
         this.addKeyListener(keyH);
         
         getPlayerImage();
+        getPowerupImage();
 
         try {
             client = new GameClient();
@@ -251,69 +256,77 @@ public class GamePanel extends JPanel {
         }
     }
     
-    public void getPlayerImage(){
-    	try {
-    		down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
-    		down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
-    		left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
-    		left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
-    		right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
-    		right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
-    		frozen = ImageIO.read(getClass().getResourceAsStream("/player/frozen.png"));
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}
-    }
+    
 
     private void drawPlayers(Graphics2D g) {
     	BufferedImage image = down1;
+    	BufferedImage barriershield = barrier;
+    	int temptilesize = tileSize;
     	
         for (Player p : players) {
-//            if (p.isIt) {
-//                g.setColor(Color.RED);
-//            } else {
-//            	if(p.isImmune) {
-//            		g.setColor(Color.GREEN);
-//            	}else {
-//            	    g.setColor(Color.BLUE);
-//            	}
-//                
-//            }
-//
-//            g.fillRect(p.x, p.y, p.size, p.size);
+        	if (p.isInvisible) {
+                // if it's an enemy player who is invisible, skip drawing them entirely
+                if (client != null && p.id != client.playerId) {
+                    continue; 
+                }
+            }
+        	
         	switch(p.id) {
         	case 0:
-        		switch(p.direction) {
-            	case "up":
-            		image = down1;
-            		break;
-            	case "down":
-            		image = down1;
-            		break;
-            	case "left":
-            		image = left1;
-            		break;
-            	case "right":
-            		image = right1;
-            		break;
-            	}
+        		if(p.isFrozen) {
+        			image = frozen;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		image = down1;
+                		break;
+                	case "down":
+                		image = down1; 
+                		break;
+                	case "left":
+                		image = left1;
+                		break;
+                	case "right":
+                		image = right1;
+                		break;
+                	}
+        		}
+        		
         		break;
         	case 1:
-        		image = frozen;
+        		image = p1down;
         		break;
         	case 2:
-        		image = frozen;
+        		image = p2down;
         		break;
         	case 3:
-        		image = frozen;
+        		temptilesize = 40;
+        		image = p3down;
         		break;
         	
         	}
         	
-        	g.drawImage(image, p.x, p.y, tileSize, tileSize,null);
-
-            g.setColor(Color.WHITE);
-            g.drawString("P" + p.id, p.x + 8, p.y + 18);
+        	Composite originalComposite = g.getComposite();
+        	
+        	// make player semi-transparent if it's the current client 
+        	if (p.isInvisible && client != null && p.id == client.playerId) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+            }
+        	
+        	g.drawImage(image, p.x, p.y, temptilesize, temptilesize,null);
+        	
+        	if(p.isIt) {
+        		g.setColor(Color.RED);
+        	}else {
+        		g.setColor(Color.WHITE);
+        	}
+            g.drawString("P" + p.id, p.x + 8, p.y - 5);
+            
+            if(p.isImmune) {
+            	g.drawImage(barriershield, p.x-5, p.y-5, 40,40,null);
+            }
+            
+            g.setComposite(originalComposite);
         }
     }
 
@@ -361,36 +374,71 @@ public class GamePanel extends JPanel {
         g.drawString(sub, (getWidth() - sw) / 2, getHeight() / 2 + 75);
     }
     
+    public void getPowerupImage(){
+    	try {
+    		speed = ImageIO.read(getClass().getResourceAsStream("/powerups/speed.png"));
+    		freeze = ImageIO.read(getClass().getResourceAsStream("/powerups/freeze.png"));
+    		shield = ImageIO.read(getClass().getResourceAsStream("/powerups/shield.png"));
+    		ghost = ImageIO.read(getClass().getResourceAsStream("/powerups/ghost.png"));
+    		barrier = ImageIO.read(getClass().getResourceAsStream("/powerups/barrier.png"));
+    		trap = ImageIO.read(getClass().getResourceAsStream("/powerups/trap.png"));
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    }
+    
     private void drawPowerUps(Graphics g) {
     	if (client == null) return;
     	
+    	BufferedImage powerup = speed;
+    	BufferedImage traptile = trap;
+    	
         for (PowerUp p : client.powerUps) {
             switch (p.type) {
-                case SPEED: g.setColor(Color.YELLOW); break;
-                case FREEZE: g.setColor(Color.CYAN); break;
-                case SHIELD: g.setColor(Color.GREEN); break;
-                case GHOST: g.setColor(Color.WHITE); break;
+                case SPEED: powerup = speed; break;
+                case FREEZE: powerup = freeze; break;
+                case SHIELD: powerup = shield; break;
+                case GHOST: powerup = ghost; break;
             }
-            g.fillOval(p.x, p.y, p.size, p.size);
+            
+            g.drawImage(powerup, p.x, p.y, tileSize, tileSize,null); 
         }
         
         // draw traps
-        g.setColor(Color.MAGENTA);
         for (Trap t : client.traps) {
-            g.fillRect(t.x, t.y, t.size, t.size);
+        	g.drawImage(traptile, t.x, t.y, tileSize, tileSize,null); 
         }
     }
     
     public void placeTrap(Player player) {
 
-        if (keyH.space) {
-            if (!spacePressed) {
+       
                 client.send("TRAP");
-                spacePressed = true;
-            }
-        } else {
-            spacePressed = false; // reset when key is released
-        }
+        
+    }
+    
+    public void getPlayerImage(){
+    	try {
+    		// player0 sprites
+    		down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+    		down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
+    		left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
+    		left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
+    		right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
+    		right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+    		frozen = ImageIO.read(getClass().getResourceAsStream("/player/frozen.png"));
+    		
+    		// player1 sprites
+    		p1down = ImageIO.read(getClass().getResourceAsStream("/p1/player.png"));
+    		
+    		// player1 sprites
+    		p2down = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
+    		
+    		// player1 sprites
+    		p3down = ImageIO.read(getClass().getResourceAsStream("/p3/player4.png"));
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
     }
     
 }

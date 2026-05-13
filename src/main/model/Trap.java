@@ -3,7 +3,7 @@ package main.model;
 import java.awt.Rectangle;
 
 public class Trap {
-    public int x, y, size = 20;
+    public int x, y, size = 30;
     public int ownerId;
 
     public Trap(int x, int y, int ownerId) {
