@@ -48,9 +48,12 @@ public class GamePanel extends JPanel {
     public final int maxScreenRow = 20;
     
     // for player sprite
-    public BufferedImage down1, down2, left1, left2, right1, right2, frozen,
+    public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2, frozen,
+    					 p1up1, p1up2, p1down1, p1down2, p1left1, p1left2, p1right1, p1right2,
     					 p1down, p2down, p3down,
     					 speed, freeze, shield, ghost, barrier, trap;
+    public int spriteCounter = 0;
+	public int spriteNum = 1;
     //public String direction;
     
     
@@ -146,7 +149,7 @@ public class GamePanel extends JPanel {
         	if(mainPlayer.collisionOn == false) {
         		dy--;
         	}
-        	mainPlayer.direction = "down";
+        	mainPlayer.direction = "up";
         }
         if (keyH.down) {
         	if(mainPlayer.collisionOn == false) {
@@ -172,6 +175,16 @@ public class GamePanel extends JPanel {
         }
 
         if (keyH.space) placeTrap(mainPlayer);
+        
+        spriteCounter++;
+        if(spriteCounter > 10) { // change player image every 10 frames
+        	if(spriteCounter == 1) {
+        		spriteNum = 2;
+        	}else if(spriteNum == 2) {
+        		spriteNum = 1;
+        	}
+        	spriteCounter = 0;
+        }
     }
 
     private void updateBots() {
@@ -278,29 +291,88 @@ public class GamePanel extends JPanel {
         		}else {
         			switch(p.direction) {
                 	case "up":
-                		image = down1;
+                		if(spriteNum == 1) {
+                			image = up1;
+                		}
+                		if(spriteNum == 2) {
+                			image = up1;
+                		}
                 		break;
                 	case "down":
-                		image = down1; 
+                		if(spriteNum == 1) {
+                			image = down1;
+                		}
+                		if(spriteNum == 2) {
+                			image = down2;
+                		}
                 		break;
                 	case "left":
-                		image = left1;
+                		if(spriteNum == 1) {
+                			image = left1;
+                		}
+                		if(spriteNum == 2) {
+                			image = left2;
+                		}
                 		break;
                 	case "right":
-                		image = right1;
+                		if(spriteNum == 1) {
+                			image = right1;
+                		}
+                		if(spriteNum == 2) {
+                			image = right2;
+                		}
                 		break;
                 	}
         		}
         		
         		break;
+        	// player 1
         	case 1:
-        		image = p1down;
+        		if(p.isFrozen) {
+        			image = frozen;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		if(spriteNum == 1) {
+                			image = p1up1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1up1;
+                		}
+                		
+                		break;
+                	case "down":
+                		if(spriteNum == 1) {
+                			image = p1down1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1down1;
+                		}
+                		break;
+                	case "left":
+                		if(spriteNum == 1) {
+                			image = p1left1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1left1;
+                		}
+                		break;
+                	case "right":
+                		if(spriteNum == 1) {
+                			image = p1right1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1right1;
+                		}
+                		break;
+                	}
+        		}
         		break;
         	case 2:
         		image = p2down;
         		break;
         	case 3:
-        		temptilesize = 40;
+        		//temptilesize = 40;
         		image = p3down;
         		break;
         	
@@ -420,6 +492,7 @@ public class GamePanel extends JPanel {
     public void getPlayerImage(){
     	try {
     		// player0 sprites
+    		up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
     		down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
     		down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
     		left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
@@ -429,7 +502,10 @@ public class GamePanel extends JPanel {
     		frozen = ImageIO.read(getClass().getResourceAsStream("/player/frozen.png"));
     		
     		// player1 sprites
-    		p1down = ImageIO.read(getClass().getResourceAsStream("/p1/player.png"));
+    		p1up1 = ImageIO.read(getClass().getResourceAsStream("/p1/up1.png"));
+    		p1down1 = ImageIO.read(getClass().getResourceAsStream("/p1/player.png"));
+    		p1left1 = ImageIO.read(getClass().getResourceAsStream("/p1/left1.png"));
+    		p1right1 = ImageIO.read(getClass().getResourceAsStream("/p1/right1.png"));
     		
     		// player1 sprites
     		p2down = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
