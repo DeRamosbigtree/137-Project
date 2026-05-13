@@ -1,12 +1,16 @@
 package main.model;
 
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
-public class Player {
+import javax.imageio.ImageIO;
+
+public class Player extends Entity{
     public int id;
     public int x, y;
     public int size = 30;
+    
     public double speed = 4;
     public boolean isIt = false;
     public long timeAsIt = 0;
@@ -14,6 +18,10 @@ public class Player {
     public boolean isImmune = false;
     public boolean isInvisible = false;
     public int trapCharges;
+    
+    // for player sprite
+    public BufferedImage down1, down2, left1, left2, right1, right2;
+    public String direction = "down";
 
     // Tag cooldown
     public boolean isInvulnerable = false;
@@ -34,6 +42,8 @@ public class Player {
         this.x = x;
         this.y = y;
         this.bot = bot;
+        
+        solidArea = new Rectangle(5,10,20,20);
     }
 
     public void move(int dx, int dy) {
@@ -44,7 +54,7 @@ public class Player {
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y, size, size);
+        return new Rectangle(5, 10, 20, 20); // slightly smaller than a whole tile
     }
 
     public void updateBotMovement(int panelWidth, int panelHeight) {
@@ -78,5 +88,6 @@ public class Player {
             }
         }
     }
-
+    
+    
 }

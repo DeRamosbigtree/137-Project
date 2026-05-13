@@ -31,6 +31,14 @@ public class ClientHandler implements Runnable {
     public boolean isImmune = false;
     public boolean isInvisible = false;
     public long lastTaggedTime = 0;
+    
+    public int speed = 5; 
+    public int trapCharges = 0;
+
+    public long speedEndTime = 0;
+    public long freezeEndTime = 0;
+    public long immuneEndTime = 0;
+    public long invisibleEndTime = 0;
 
     public ClientHandler(Socket socket, int playerId, GameServer server) {
         this.socket = socket;
@@ -44,7 +52,7 @@ public class ClientHandler implements Runnable {
                 y = 50;
                 break;
             case 1:
-                x = 700;
+                x = 800;
                 y = 50;
                 break;
             case 2:
@@ -52,7 +60,7 @@ public class ClientHandler implements Runnable {
                 y = 500;
                 break;
             case 3:
-                x = 700;
+                x = 800;
                 y = 500;
                 break;
         }
@@ -83,6 +91,8 @@ public class ClientHandler implements Runnable {
                 if (parts[0].equals("INPUT") && parts.length == 3) {
                     dx = Integer.parseInt(parts[1]);
                     dy = Integer.parseInt(parts[2]);
+                }else if (parts[0].equals("TRAP")) {
+                    server.placeTrap(this);
                 }
             }
         } catch (IOException e) {

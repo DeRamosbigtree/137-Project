@@ -7,7 +7,7 @@ import java.util.Random;
 public class PowerUp {
 
     public int x, y;
-    public int size = 20;
+    public int size = 30;
 
     public enum Type {
         SPEED, FREEZE, SHIELD, GHOST;

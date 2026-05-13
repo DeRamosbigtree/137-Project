@@ -1,42 +1,65 @@
 package main.engine;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import main.input.KeyHandler;
 import main.model.Player;
 import main.model.PowerUp;
 import main.model.Trap;
 import main.network.GameClient;
+import tile.TileManager;
 
 public class GamePanel extends JPanel {
     private String serverHost;
     private boolean isHost;
-
+	
+	TileManager tileM = new TileManager(this);
+	ObstacleCollisionChecker oChecker = new ObstacleCollisionChecker(this);
     private final ArrayList<Player> players = new ArrayList<>();
     private final KeyHandler keyH = new KeyHandler();
+    
 
     private Player mainPlayer;
     private GameClient client;
 
     private final GameTimer timer = new GameTimer(70);
+    private boolean spacePressed = false;
 
     private ScoreManager scoreManager;
     
-    private final ArrayList<PowerUp> powerUps = new ArrayList<>();
-    private final ArrayList<Trap> traps = new ArrayList<>();
+    //private final ArrayList<PowerUp> powerUps = new ArrayList<>();
     private final Random rand = new Random();
 
-    private long lastSpawn = 0;
-    private final long spawnDelay = 3000; // 7 seconds
+    //private long lastSpawn = 0;
+    //private final long spawnDelay = 3000; //  seconds
+    public final int tileSize = 30;
+    public final int maxScreenCol = 30;
+    public final int maxScreenRow = 20;
+    
+    // for player sprite
+    public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2, frozen,
+    					 p1up1, p1up2, p1down1, p1down2, p1left1, p1left2, p1right1, p1right2,
+    					 p2up1, p2up2, p2down1, p2down2, p2left1, p2left2, p2right1, p2right2,
+    					 p2down, p3down,
+    					 speed, freeze, shield, ghost, barrier, trap;
+    public int spriteCounter = 0;
+	public int spriteNum = 1;
+    //public String direction;
     
     
-
+    
     public GamePanel(String host) {
         this.serverHost = host;
         this.isHost = host.equals("localhost");
@@ -45,6 +68,9 @@ public class GamePanel extends JPanel {
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);
+        
+        getPlayerImage();
+        getPowerupImage();
 
         try {
             client = new GameClient(host);
@@ -146,17 +172,51 @@ public class GamePanel extends JPanel {
 
         int dx = 0;
         int dy = 0;
-
-        if (keyH.up) dy--;
-        if (keyH.down) dy++;
-        if (keyH.left) dx--;
-        if (keyH.right) dx++;
+        
+        mainPlayer.collisionOn = false;
+        mainPlayer.direction = "down";
+        oChecker.checkTile(mainPlayer);
+        
+        if (keyH.up) { 
+        	if(mainPlayer.collisionOn == false) {
+        		dy--;
+        	}
+        	mainPlayer.direction = "up";
+        }
+        if (keyH.down) {
+        	if(mainPlayer.collisionOn == false) {
+        		dy++;
+        	}
+        	mainPlayer.direction = "down";
+        }
+        if (keyH.left) {
+        	if(mainPlayer.collisionOn == false) {
+        		dx--;
+        	}
+        	mainPlayer.direction = "left";
+        }
+        if (keyH.right) {
+        	if(mainPlayer.collisionOn == false) {
+        		dx++;
+        	}
+        	mainPlayer.direction = "right";
+        }
 
         if (client != null) {
             client.sendInput(dx, dy);
         }
 
         if (keyH.space) placeTrap(mainPlayer);
+        
+        spriteCounter++;
+        if(spriteCounter > 10) { // change player image every 10 frames
+        	if(spriteCounter == 1) {
+        		spriteNum = 2;
+        	}else if(spriteNum == 2) {
+        		spriteNum = 1;
+        	}
+        	spriteCounter = 0;
+        }
     }
 
     private void updateBots() {
@@ -199,7 +259,7 @@ public class GamePanel extends JPanel {
 
             return; // ensure ONLY ONE tag happens
         }
-    }
+    }  
 
     private Player getCurrentItPlayer() {
         for (Player p : players) {
@@ -212,11 +272,14 @@ public class GamePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+    	
         super.paintComponent(g);
-
+        Graphics2D g2 = (Graphics2D)g;
         String phase = (client != null) ? client.phase : "LOBBY";
-
-        drawPlayers(g);
+        
+        tileM.draw(g2);
+        
+        drawPlayers(g2);
 
         switch (phase) {
             case "LOBBY":
@@ -243,24 +306,176 @@ public class GamePanel extends JPanel {
             drawServerInfo(g);
         }
     }
+    
+    
 
-    private void drawPlayers(Graphics g) {
+    private void drawPlayers(Graphics2D g) {
+    	BufferedImage image = down1;
+    	BufferedImage barriershield = barrier;
+    	int temptilesize = tileSize;
+    	
         for (Player p : players) {
-            if (p.isIt) {
-                g.setColor(Color.RED);
-            } else {
-            	if(p.isImmune) {
-            		g.setColor(Color.GREEN);
-            	}else {
-            	    g.setColor(Color.BLUE);
-            	}
-                
+        	if (p.isInvisible) {
+                // if it's an enemy player who is invisible, skip drawing them entirely
+                if (client != null && p.id != client.playerId) {
+                    continue; 
+                }
             }
-
-            g.fillRect(p.x, p.y, p.size, p.size);
-
-            g.setColor(Color.WHITE);
-            g.drawString("P" + p.id, p.x + 8, p.y + 18);
+        	
+        	switch(p.id) {
+        	case 0:
+        		if(p.isFrozen) {
+        			image = frozen;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		if(spriteNum == 1) {
+                			image = up1;
+                		}
+                		if(spriteNum == 2) {
+                			image = up1;
+                		}
+                		break;
+                	case "down":
+                		if(spriteNum == 1) {
+                			image = down1;
+                		}
+                		if(spriteNum == 2) {
+                			image = down2;
+                		}
+                		break;
+                	case "left":
+                		if(spriteNum == 1) {
+                			image = left1;
+                		}
+                		if(spriteNum == 2) {
+                			image = left2;
+                		}
+                		break;
+                	case "right":
+                		if(spriteNum == 1) {
+                			image = right1;
+                		}
+                		if(spriteNum == 2) {
+                			image = right2;
+                		}
+                		break;
+                	}
+        		}
+        		
+        		break;
+        	// player 1
+        	case 1:
+        		if(p.isFrozen) {
+        			image = frozen;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		if(spriteNum == 1) {
+                			image = p1up1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1up1;
+                		}
+                		
+                		break;
+                	case "down":
+                		if(spriteNum == 1) {
+                			image = p1down1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1down1;
+                		}
+                		break;
+                	case "left":
+                		if(spriteNum == 1) {
+                			image = p1left1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1left1;
+                		}
+                		break;
+                	case "right":
+                		if(spriteNum == 1) {
+                			image = p1right1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p1right1;
+                		}
+                		break;
+                	}
+        		}
+        		break;
+        	// player 2 
+        	case 2: 
+        		if(p.isFrozen) {
+        			image = frozen;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		if(spriteNum == 1) {
+                			image = p2up1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2up1;
+                		}
+                		
+                		break;
+                	case "down":
+                		if(spriteNum == 1) {
+                			image = p2down1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2down1;
+                		}
+                		break;
+                	case "left":
+                		if(spriteNum == 1) {
+                			image = p2left1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2left1;
+                		}
+                		break;
+                	case "right":
+                		if(spriteNum == 1) {
+                			image = p2right1;
+                		}
+                		if(spriteNum == 2) {
+                			image = p2right1;
+                		}
+                		break;
+        			}
+        		}
+        		break;
+        	case 3:
+        		//temptilesize = 40;
+        		image = p3down;
+        		break;
+        	
+        	}
+        	
+        	Composite originalComposite = g.getComposite();
+        	
+        	// make player semi-transparent if it's the current client 
+        	if (p.isInvisible && client != null && p.id == client.playerId) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+            }
+        	
+        	g.drawImage(image, p.x, p.y, temptilesize, temptilesize,null);
+        	
+        	if(p.isIt) {
+        		g.setColor(Color.RED);
+        	}else {
+        		g.setColor(Color.WHITE);
+        	}
+            g.drawString("P" + p.id, p.x + 8, p.y - 5);
+            
+            if(p.isImmune) {
+            	g.drawImage(barriershield, p.x-5, p.y-5, 40,40,null);
+            }
+            
+            g.setComposite(originalComposite);
         }
     }
 
@@ -308,160 +523,78 @@ public class GamePanel extends JPanel {
         g.drawString(sub, (getWidth() - sw) / 2, getHeight() / 2 + 75);
     }
     
+    public void getPowerupImage(){
+    	try {
+    		speed = ImageIO.read(getClass().getResourceAsStream("/powerups/speed.png"));
+    		freeze = ImageIO.read(getClass().getResourceAsStream("/powerups/freeze.png"));
+    		shield = ImageIO.read(getClass().getResourceAsStream("/powerups/shield.png"));
+    		ghost = ImageIO.read(getClass().getResourceAsStream("/powerups/ghost.png"));
+    		barrier = ImageIO.read(getClass().getResourceAsStream("/powerups/barrier.png"));
+    		trap = ImageIO.read(getClass().getResourceAsStream("/powerups/trap.png"));
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    }
+    
     private void drawPowerUps(Graphics g) {
-        for (PowerUp p : powerUps) {
+    	if (client == null) return;
+    	
+    	BufferedImage powerup = speed;
+    	BufferedImage traptile = trap;
+    	
+        for (PowerUp p : client.powerUps) {
             switch (p.type) {
-                case SPEED: g.setColor(Color.YELLOW); break;
-                case FREEZE: g.setColor(Color.CYAN); break;
-                case SHIELD: g.setColor(Color.GREEN); break;
-                case GHOST: g.setColor(Color.WHITE); break;
+                case SPEED: powerup = speed; break;
+                case FREEZE: powerup = freeze; break;
+                case SHIELD: powerup = shield; break;
+                case GHOST: powerup = ghost; break;
             }
-            g.fillOval(p.x, p.y, p.size, p.size);
+            
+            g.drawImage(powerup, p.x, p.y, tileSize, tileSize,null); 
         }
         
         // draw traps
-        g.setColor(Color.MAGENTA);
-        for (Trap t : traps) {
-            g.fillRect(t.x, t.y, t.size, t.size);
-        }
-    }
-    
-    // Power-up
-    // Track active effects per player
-    public static class Effect {
-        PowerUp.Type type;
-        long endTime;
-
-        Effect(PowerUp.Type type, long duration) {
-            this.type = type;
-            this.endTime = System.currentTimeMillis() + duration;
-        }
-    }
-
-    private final java.util.Map<Player, java.util.List<Effect>> activeEffects = new java.util.HashMap<>();
-    
-    private void applyEffect(Player player, PowerUp.Type type) {
-
-        activeEffects.putIfAbsent(player, new ArrayList<>());
-
-        switch (type) {
-            case SPEED:
-                player.speed = 6 ; // boosted speed by 50%
-                activeEffects.get(player).add(new Effect(type, 3000));
-                break;
-
-            case FREEZE:
-                player.trapCharges += 1;
-                break;
-            case SHIELD:
-            	player.isImmune = true;
-            	activeEffects.get(player).add(new Effect(type, 10000));
-            	break;
-            case GHOST:
-            	player.isInvisible = true;
-            	activeEffects.get(player).add(new Effect(type, 4000));
-            	break;
-        }
-    }
-    
-    private void spawnPowerUp() {
-        int width = Math.max(getWidth(), 800);
-        int height = Math.max(getHeight(), 600);
-
-        int x = rand.nextInt(width - 20);
-        int y = rand.nextInt(height - 20);
-        powerUps.add(new PowerUp(x, y, PowerUp.getRandomType()));
-    }
-    
-    private void updatePowerUps() {
-        long now = System.currentTimeMillis();
-
-        // allow spawning of power up every 7 seconds 
-        if (now - lastSpawn > spawnDelay) {
-            spawnPowerUp();
-            lastSpawn = now;
-        }
-
-        // collision
-        Iterator<PowerUp> it = powerUps.iterator();
-
-        while (it.hasNext()) {
-            PowerUp p = it.next();
-
-            for (Player player : players) {
-                if (player.getBounds().intersects(p.getBounds())) {
-
-                    applyEffect(player, p.type);
-                    it.remove();
-                    break;
-                }
-            }
+        for (Trap t : client.traps) {
+        	g.drawImage(traptile, t.x, t.y, tileSize, tileSize,null); 
         }
     }
     
     public void placeTrap(Player player) {
-        if (player.trapCharges <= 0) return;
 
-        traps.add(new Trap(player.x, player.y, player));
-        player.trapCharges--;
+       
+                client.send("TRAP");
+        
     }
     
-    private void updateTraps(ArrayList<Player> players) {
-        Iterator<Trap> it = traps.iterator();
-
-        while (it.hasNext()) {
-            Trap t = it.next();
-
-            for (Player p : players) {
-                if (p == t.owner) continue;
-
-                if (p.getBounds().intersects(t.getBounds())) {
-
-                    // apply freeze effect to player (2 seconds)
-                    activeEffects.putIfAbsent(p, new ArrayList<>());
-                    activeEffects.get(p).add(new Effect(PowerUp.Type.FREEZE, 2000));
-
-                    it.remove();
-                    break;
-                }
-            }
-        }
+    public void getPlayerImage(){
+    	try {
+    		// player0 sprites
+    		up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
+    		down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+    		down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
+    		left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
+    		left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
+    		right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
+    		right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+    		frozen = ImageIO.read(getClass().getResourceAsStream("/player/frozen.png"));
+    		
+    		// player1 sprites
+    		p1up1 = ImageIO.read(getClass().getResourceAsStream("/p1/up1.png"));
+    		p1down1 = ImageIO.read(getClass().getResourceAsStream("/p1/player.png"));
+    		p1left1 = ImageIO.read(getClass().getResourceAsStream("/p1/left1.png"));
+    		p1right1 = ImageIO.read(getClass().getResourceAsStream("/p1/right1.png"));
+    		
+    		// player1 sprites
+    		p2up1 = ImageIO.read(getClass().getResourceAsStream("/p2/up1.png"));
+    		p2down1 = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
+    		p2left1 = ImageIO.read(getClass().getResourceAsStream("/p2/left1.png"));
+    		p2right1 = ImageIO.read(getClass().getResourceAsStream("/p2/right1.png"));
+    		
+    		// player1 sprites
+    		p3down = ImageIO.read(getClass().getResourceAsStream("/p3/player4.png"));
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
     }
     
-    private void updateEffects() {
-        long now = System.currentTimeMillis();
-
-        for (Player player : players) {
-
-            // skip if no effects
-            if (!activeEffects.containsKey(player)) continue;
-
-            java.util.List<Effect> effects = activeEffects.get(player);
-
-            Iterator<Effect> it = effects.iterator();
-
-            boolean hasSpeed = false;
-            boolean isFrozen = false;
-            boolean isImmune = false;
-            boolean isInvisible = false;
-
-            while (it.hasNext()) {
-                Effect e = it.next();
-
-                if (now > e.endTime) {
-                    it.remove();
-                } else {
-                    if (e.type == PowerUp.Type.SPEED) hasSpeed = true;
-                    if (e.type == PowerUp.Type.FREEZE) isFrozen = true;
-                    if( e.type == PowerUp.Type.SHIELD) isImmune = true;
-                    if( e.type == PowerUp.Type.GHOST) isInvisible = true;
-                }
-            }
-
-            player.speed = hasSpeed ? 6 : 4;
-            player.isFrozen = isFrozen;
-            //player.isImmune = isImmune;
-            player.isInvisible = isInvisible;
-        }
-    }
 }
