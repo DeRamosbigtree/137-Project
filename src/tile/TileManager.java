@@ -30,35 +30,35 @@ public class TileManager {
 		
 		try {
 			tile[0] = new Tile();
-			tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/basegrass.png"));
+			tile[0].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basegrass.png"));
 			
 			tile[1] = new Tile();
-			tile[1].image = ImageIO.read(getClass().getResourceAsStream("/tiles/grass2.png"));
+			tile[1].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/grass2.png"));
 			
 			tile[2] = new Tile();
-			tile[2].image = ImageIO.read(getClass().getResourceAsStream("/tiles/flower1.png"));
+			tile[2].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/flower1.png"));
 			
 			tile[3] = new Tile();
-			tile[3].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bush1.png"));
+			tile[3].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/bush1.png"));
 			tile[3].collision = true;
 			
 			tile[4] = new Tile();
-			tile[4].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_horizontal.png"));
+			tile[4].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/bushstone_horizontal.png"));
 			tile[4].collision = true;
 			
 			tile[5] = new Tile();
-			tile[5].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_corner.png"));
+			tile[5].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/bushstone_corner.png"));
 			
 			tile[6] = new Tile();
-			tile[6].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_vertical.png"));
+			tile[6].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/bushstone_vertical.png"));
 			tile[6].collision = true;
 			
 			tile[7] = new Tile();
-			tile[7].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_vertical2.png"));
+			tile[7].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/bushstone_vertical2.png"));
 			tile[7].collision = true;
 			
 			tile[8] = new Tile();
-			tile[8].image = ImageIO.read(getClass().getResourceAsStream("/tiles/bushstone_corner2.png"));
+			tile[8].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/bushstone_corner2.png"));
 			
 		}catch(IOException e) {
 			e.printStackTrace();

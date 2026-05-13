@@ -6,6 +6,7 @@ import javax.swing.*;
 import main.engine.GameLoop;
 import main.engine.GamePanel;
 import main.network.GameServer;
+import java.net.InetAddress;
 
 public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
@@ -30,6 +31,15 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
         hostButton = new Rectangle(300, 250, 200, 50);
         joinButton = new Rectangle(300, 330, 200, 50);
     }
+    
+    private String getLocalIP() {
+
+    try {
+        return InetAddress.getLocalHost().getHostAddress();
+    } catch (Exception e) {
+        return "localhost";
+    }
+}
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -121,7 +131,13 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         repaint();
 
-        startGame("localhost");
+        String ip = getLocalIP();
+
+        message = "Server started at: " + ip;
+
+        repaint();
+
+        startGame(ip);
     }
 
     private void joinGame() {
