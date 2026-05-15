@@ -22,6 +22,7 @@ public class Player extends Entity{
     // for player sprite
     public BufferedImage down1, down2, left1, left2, right1, right2;
     public String direction = "down";
+    public int spriteNum = 1;
 
     // Tag cooldown
     public boolean isInvulnerable = false;

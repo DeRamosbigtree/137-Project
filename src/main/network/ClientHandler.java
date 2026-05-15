@@ -23,6 +23,11 @@ public class ClientHandler implements Runnable {
     //without volatile, may cache the values in CPU registers and the game loop could read stale directions
     public volatile int dx = 0;
     public volatile int dy = 0;
+    
+    // sprite statess
+    public int direction = 1; // 0=up, 1=down, 2=left, 3=right
+    public int spriteNum = 1;
+    public int spriteCounter = 0;
 
     // added other statuses so the server can read and write to them
     public boolean isIt = false;

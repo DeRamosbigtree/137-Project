@@ -85,7 +85,7 @@ public class GameClient {
                     case "STATE":
                         for (int i = 1; i < parts.length; i++) {
                             String[] data = parts[i].split(",");
-                            if (data.length < 8) continue;
+                            if (data.length < 10) continue;
                             int id             = Integer.parseInt(data[0]);
                             int x              = Integer.parseInt(data[1]);
                             int y              = Integer.parseInt(data[2]);
@@ -94,7 +94,9 @@ public class GameClient {
                             int isFrozen       = Integer.parseInt(data[5]);
                             int isImmune       = Integer.parseInt(data[6]);
                             int isInvisible    = Integer.parseInt(data[7]);
-                            playerStates.put(id, new int[]{x, y, isIt, isInvulnerable, isFrozen, isImmune, isInvisible});
+                            int direction      = Integer.parseInt(data[8]);
+                            int spriteNum      = Integer.parseInt(data[9]);
+                            playerStates.put(id, new int[]{x, y, isIt, isInvulnerable, isFrozen, isImmune, isInvisible, direction, spriteNum});
                         }
                         break;
 

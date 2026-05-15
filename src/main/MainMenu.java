@@ -12,6 +12,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
     private Rectangle hostButton;
     private Rectangle joinButton;
+    private int screenSize = 900;
 
     private String message = "";
     private boolean enteringIP = false;
@@ -53,7 +54,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         int titleWidth = g.getFontMetrics().stringWidth(title);
 
-        g.drawString(title, (800 - titleWidth) / 2, 150);
+        g.drawString(title, (900 - titleWidth) / 2, 150);
 
         // BUTTONS
         drawButton(g, hostButton, "HOST GAME");
@@ -81,7 +82,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         g.drawString(
                 message,
-                (800 - msgWidth) / 2,
+                (900 - msgWidth) / 2,
                 470
         );
 
@@ -97,7 +98,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
             g.drawString(
                     text,
-                    (800 - width) / 2,
+                    (900 - width) / 2,
                     520
             );
         }
