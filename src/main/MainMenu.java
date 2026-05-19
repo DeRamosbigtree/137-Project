@@ -52,6 +52,26 @@ public class MainMenu extends JPanel implements MouseMotionListener, MouseListen
         return "localhost";
     }
 }
+    // alternative method to get local IP via wifi
+    // private String getLocalIP() {
+    //     try {
+    //         java.net.DatagramSocket socket = new java.net.DatagramSocket();
+
+    //         socket.connect(
+    //             java.net.InetAddress.getByName("8.8.8.8"),
+    //             10002
+    //         );
+
+    //         String ip = socket.getLocalAddress().getHostAddress();
+
+    //         socket.close();
+
+    //         return ip;
+
+    //     } catch (Exception e) {
+    //         return "localhost";
+    //     }
+    // }
 
     @Override
     protected void paintComponent(Graphics g) {
