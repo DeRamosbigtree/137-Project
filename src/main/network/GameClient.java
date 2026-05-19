@@ -83,6 +83,12 @@ public class GameClient {
                         System.out.println("My ID: " + playerId);
                         break;
 
+                    case "PLAYERS":
+                        connectedPlayers = Integer.parseInt(parts[1]);
+                        System.out.println("Players connected: " + connectedPlayers);
+                        System.out.println("CLIENT RECEIVED PLAYERS: " + connectedPlayers);
+                        break;
+
                     case "STATE":
                         for (int i = 1; i < parts.length; i++) {
                             String[] data = parts[i].split(",");

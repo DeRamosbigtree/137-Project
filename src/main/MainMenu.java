@@ -163,7 +163,10 @@ public class MainMenu extends JPanel implements MouseMotionListener, MouseListen
 
         JFrame window = new JFrame("Tag Game");
 
-        GamePanel panel = new GamePanel(host);
+        // GamePanel panel = new GamePanel(host);
+        boolean isHost = host.equals(getLocalIP());
+
+        GamePanel panel = new GamePanel(host, isHost);
 
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);

@@ -75,6 +75,7 @@ public class ClientHandler implements Runnable {
             out = new PrintWriter(socket.getOutputStream(), true);
 
             send("ID " + playerId);
+            send("PLAYERS " + (server.getClientCount()));
 
         } catch (IOException e) {
             e.printStackTrace();

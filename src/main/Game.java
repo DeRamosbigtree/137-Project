@@ -11,7 +11,7 @@ public class Game {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
 
-        GamePanel panel = new GamePanel("localhost");
+        GamePanel panel = new GamePanel("localhost", true); // Change to false to join a game instead of hosting
         window.add(panel);
         window.pack();
 

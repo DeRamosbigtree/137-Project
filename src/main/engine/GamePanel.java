@@ -56,12 +56,9 @@ public class GamePanel extends JPanel {
     
     
     
-    public GamePanel(String host) {
+    public GamePanel(String host, boolean isHost) {
         this.serverHost = host;
         this.isHost = isHost;
-
-        new GamePanel(ip, true);   // host
-        new GamePanel(ip, false);  // join
 
         this.setPreferredSize(new Dimension(1200, 720));
         this.setBackground(Color.BLACK);

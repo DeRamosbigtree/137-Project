@@ -399,4 +399,8 @@ public class GameServer {
         }
         broadcast(sb.toString());
     }
+
+    public synchronized int getClientCount() {
+        return clients.size();
+    }
 }
