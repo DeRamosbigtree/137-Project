@@ -2,16 +2,26 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import main.engine.GameLoop;
 import main.engine.GamePanel;
 import main.network.GameServer;
 import java.net.InetAddress;
 
-public class MainMenu extends JPanel implements MouseListener, KeyListener {
+public class MainMenu extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
     private Rectangle hostButton;
     private Rectangle joinButton;
+    private int screenSize = 1000;
+    
+    private BufferedImage hostBtn, hostBtnHover;
+    private BufferedImage joinBtn, joinBtnHover;
+    private BufferedImage background;
+    
+    
 
     private String message = "";
     private boolean enteringIP = false;
@@ -19,17 +29,20 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
     public MainMenu() {
 
-        setPreferredSize(new Dimension(900, 600));
+        setPreferredSize(new Dimension(1200, 720));
         setBackground(Color.BLACK);
 
         addMouseListener(this);
+        addMouseMotionListener(this);
         addKeyListener(this);
 
         setFocusable(true);
         requestFocusInWindow();
 
-        hostButton = new Rectangle(300, 250, 200, 50);
-        joinButton = new Rectangle(300, 330, 200, 50);
+        hostButton = new Rectangle(450, 250, 300, 100);
+        joinButton = new Rectangle(450, 330, 300, 100);
+        
+        getImage();
     }
     
     private String getLocalIP() {
@@ -44,20 +57,14 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        // TITLE
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 42));
-
-        String title = "4 PLAYER TAG GAME";
-
-        int titleWidth = g.getFontMetrics().stringWidth(title);
-
-        g.drawString(title, (800 - titleWidth) / 2, 150);
+        
+        g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+        
+        Point mousePos = getMousePosition();
 
         // BUTTONS
-        drawButton(g, hostButton, "HOST GAME");
-        drawButton(g, joinButton, "JOIN GAME");
+        drawButton(g, hostButton, mousePos, "HOST");
+        drawButton(g, joinButton, mousePos, "JOIN");
 
         // FOOTER
         g.setColor(Color.LIGHT_GRAY);
@@ -69,7 +76,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         g.drawString(
                 footer,
-                (800 - footerWidth) / 2,
+                (1200 - footerWidth) / 2,
                 560
         );
 
@@ -81,7 +88,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         g.drawString(
                 message,
-                (800 - msgWidth) / 2,
+                (1200 - msgWidth) / 2,
                 470
         );
 
@@ -97,28 +104,28 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
             g.drawString(
                     text,
-                    (800 - width) / 2,
+                    (1200 - width) / 2,
                     520
             );
         }
     }
-
-    private void drawButton(Graphics g, Rectangle rect, String text) {
-
-        g.setColor(Color.DARK_GRAY);
-        g.fillRect(rect.x, rect.y, rect.width, rect.height);
-
-        g.setColor(Color.WHITE);
-        g.drawRect(rect.x, rect.y, rect.width, rect.height);
-
-        g.setFont(new Font("Arial", Font.BOLD, 22));
-
-        int textWidth = g.getFontMetrics().stringWidth(text);
-
-        int textX = rect.x + (rect.width - textWidth) / 2;
-        int textY = rect.y + 32;
-
-        g.drawString(text, textX, textY);
+    
+    private void drawButton(Graphics g, Rectangle rect, Point mousePos, String text) {
+    	
+    	if(text=="HOST") {
+    		if (mousePos != null && rect.contains(mousePos)) {
+                g.drawImage(hostBtnHover, rect.x, rect.y, rect.width, rect.height, null);
+            } else {
+                g.drawImage(hostBtn, rect.x, rect.y, rect.width, rect.height, null);
+            }
+    	}else if(text=="JOIN"){
+    		if (mousePos != null && joinButton.contains(mousePos)) {
+                g.drawImage(joinBtnHover, joinButton.x, joinButton.y, joinButton.width, joinButton.height, null);
+            } else {
+                g.drawImage(joinBtn, joinButton.x, joinButton.y, joinButton.width, joinButton.height, null);
+            }
+    	}
+    	
     }
 
     private void hostGame() {
@@ -250,6 +257,14 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
     @Override
     public void mouseExited(MouseEvent e) {}
+    
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        repaint(); // Tells the panel to re-check if the mouse is inside a button rectangle
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {}
 
     public static void main(String[] args) {
 
@@ -264,5 +279,18 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         window.setLocationRelativeTo(null);
         window.setVisible(true);
+    }
+    
+    public void getImage() {
+    	try {
+            hostBtn = ImageIO.read(getClass().getResourceAsStream("/other/hostgame.png"));
+            hostBtnHover   = ImageIO.read(getClass().getResourceAsStream("/other/hostgamehover.png"));
+            joinBtn = ImageIO.read(getClass().getResourceAsStream("/other/joingame.png"));
+            joinBtnHover   = ImageIO.read(getClass().getResourceAsStream("/other/joingamehover.png"));
+            background   = ImageIO.read(getClass().getResourceAsStream("/other/mainmenuplaceholder.png"));
+        } catch (Exception e) {
+            System.err.println("Error loading menu button images!");
+            e.printStackTrace();
+        }
     }
 }

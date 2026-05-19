@@ -15,9 +15,9 @@ public class GameServer {
     private static final int PORT = 5000;
     private static final int MAX_PLAYERS = 4;
     //static final int SPEED = 5;
-    static final int PLAYER_SIZE = 30;
-    static final int ARENA_W = 900;
-    static final int ARENA_H = 600;
+    static final int PLAYER_SIZE = 50;
+    static final int ARENA_W = 1200;
+    static final int ARENA_H = 720;
     private static final int MATCH_SECONDS = 70;
 
     private ServerSocket serverSocket;
@@ -130,6 +130,23 @@ public class GameServer {
             if (c.y < 0) c.y = 0;
             if (c.x > ARENA_W - PLAYER_SIZE) c.x = ARENA_W - PLAYER_SIZE;
             if (c.y > ARENA_H - PLAYER_SIZE) c.y = ARENA_H - PLAYER_SIZE;
+            
+            // to determine direction
+            if (c.dy < 0) c.direction = 0; // up
+            else if (c.dy > 0) c.direction = 1; // down
+            else if (c.dx < 0) c.direction = 2; // left
+            else if (c.dx > 0) c.direction = 3; // right
+            
+            // animate sprite if player is moving
+            if (c.dx != 0 || c.dy != 0) {
+                c.spriteCounter++;
+                if (c.spriteCounter > 10) {
+                    c.spriteNum = (c.spriteNum == 1) ? 2 : 1;
+                    c.spriteCounter = 0;
+                }
+            } else {
+                c.spriteNum = 1; // Resets character to a standing frame when stopped
+            }
         }
     }
 
@@ -254,7 +271,9 @@ public class GameServer {
               .append(c.isInvulnerable ? 1 : 0).append(",")
               .append(c.isFrozen ? 1 : 0).append(",")
               .append(c.isImmune ? 1 : 0).append(",")
-              .append(c.isInvisible ? 1 : 0);
+              .append(c.isInvisible ? 1 : 0).append(",")
+              .append(c.direction).append(",")
+              .append(c.spriteNum);
         }
         broadcast(sb.toString());
     }
