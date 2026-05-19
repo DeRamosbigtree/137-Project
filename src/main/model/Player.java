@@ -9,9 +9,9 @@ import javax.imageio.ImageIO;
 public class Player extends Entity{
     public int id;
     public int x, y;
-    public int size = 30;
+    public int size = 50;
     
-    public double speed = 4;
+    public double speed = 5;
     public boolean isIt = false;
     public long timeAsIt = 0;
     public boolean isFrozen = false;

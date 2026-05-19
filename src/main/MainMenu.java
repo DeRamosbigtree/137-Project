@@ -12,7 +12,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
     private Rectangle hostButton;
     private Rectangle joinButton;
-    private int screenSize = 900;
+    private int screenSize = 1000;
 
     private String message = "";
     private boolean enteringIP = false;
@@ -20,7 +20,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
     public MainMenu() {
 
-        setPreferredSize(new Dimension(900, 600));
+        setPreferredSize(new Dimension(1200, 720));
         setBackground(Color.BLACK);
 
         addMouseListener(this);
@@ -29,8 +29,8 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
         setFocusable(true);
         requestFocusInWindow();
 
-        hostButton = new Rectangle(300, 250, 200, 50);
-        joinButton = new Rectangle(300, 330, 200, 50);
+        hostButton = new Rectangle(500, 250, 200, 50);
+        joinButton = new Rectangle(500, 330, 200, 50);
     }
     
     private String getLocalIP() {
@@ -54,7 +54,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         int titleWidth = g.getFontMetrics().stringWidth(title);
 
-        g.drawString(title, (900 - titleWidth) / 2, 150);
+        g.drawString(title, (1200 - titleWidth) / 2, 150);
 
         // BUTTONS
         drawButton(g, hostButton, "HOST GAME");
@@ -70,7 +70,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         g.drawString(
                 footer,
-                (800 - footerWidth) / 2,
+                (1200 - footerWidth) / 2,
                 560
         );
 
@@ -82,7 +82,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
         g.drawString(
                 message,
-                (900 - msgWidth) / 2,
+                (1200 - msgWidth) / 2,
                 470
         );
 
@@ -98,7 +98,7 @@ public class MainMenu extends JPanel implements MouseListener, KeyListener {
 
             g.drawString(
                     text,
-                    (900 - width) / 2,
+                    (1200 - width) / 2,
                     520
             );
         }

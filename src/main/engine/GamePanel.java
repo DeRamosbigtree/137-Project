@@ -43,9 +43,9 @@ public class GamePanel extends JPanel {
 
     //private long lastSpawn = 0;
     //private final long spawnDelay = 3000; //  seconds
-    public final int tileSize = 30;
+    public final int tileSize = 40;
     public final int maxScreenCol = 30;
-    public final int maxScreenRow = 20;
+    public final int maxScreenRow = 18;
     
     // for player sprite
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2, frozen,
@@ -60,7 +60,7 @@ public class GamePanel extends JPanel {
         this.serverHost = host;
         this.isHost = host.equals("localhost");
 
-        this.setPreferredSize(new Dimension(900, 600));
+        this.setPreferredSize(new Dimension(1200, 720));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(keyH);
@@ -113,18 +113,6 @@ public class GamePanel extends JPanel {
         g.drawString(connectedText, getWidth() - connectedWidth - 10, 580);
     }
 
-    private void initializePlayers() {
-        mainPlayer = new Player(0, 100, 100, false);
-        players.add(mainPlayer);
-
-        players.add(new Player(1, 500, 100, true));
-        players.add(new Player(2, 100, 400, true));
-        players.add(new Player(3, 500, 400, true));
-
-        // Start with player 0 as It
-        players.get(0).isIt = true;
-    }
-
     public void updateGame() {
         if (mainPlayer == null && client.playerId >= 0 && client.playerId < players.size()) {
             mainPlayer = players.get(client.playerId);
@@ -134,11 +122,6 @@ public class GamePanel extends JPanel {
         if (client != null && "PLAYING".equals(client.phase)) {
             updateMainPlayer();
         }
-
-        // updateBots();
-        // updatePowerUps();
-        // updateEffects();
-        // updateTraps(players);
 
         if (client != null) {
             // Sync positions and state flags from server
@@ -176,84 +159,44 @@ public class GamePanel extends JPanel {
     }
 
     private void updateMainPlayer() {
-        if (mainPlayer == null) return;
+    	if (mainPlayer == null) return;
 
         int dx = 0;
         int dy = 0;
-        
-        mainPlayer.collisionOn = false;
-        oChecker.checkTile(mainPlayer);
-        
-        if (keyH.up) { 
-        	if(mainPlayer.collisionOn == false) {
-        		dy--;
-        	}
-        }
-        if (keyH.down) {
-        	if(mainPlayer.collisionOn == false) {
-        		dy++;
-        	}
-        }
-        if (keyH.left) {
-        	if(mainPlayer.collisionOn == false) {
-        		dx--;
-        	}
-        }
-        if (keyH.right) {
-        	if(mainPlayer.collisionOn == false) {
-        		dx++;
-        	}
+
+        // 1. Capture the intended raw inputs from the keyboard
+        if (keyH.up)    dy--;
+        if (keyH.down)  dy++;
+        if (keyH.left)  dx--;
+        if (keyH.right) dx++;
+
+        // 2. Predict collisions if the player is trying to move
+        if (dx != 0 || dy != 0) {
+            
+            // Assign a temporary direction so oChecker knows which way to project the bounding box
+            if (dy < 0)       mainPlayer.direction = "up";
+            else if (dy > 0)  mainPlayer.direction = "down";
+            else if (dx < 0)  mainPlayer.direction = "left";
+            else if (dx > 0)  mainPlayer.direction = "right";
+
+            // Reset flag and run the tile collision check
+            mainPlayer.collisionOn = false;
+            oChecker.checkTile(mainPlayer);
+
+            // 3. If a solid tile is blocking the way, cancel the input
+            if (mainPlayer.collisionOn) {
+                dx = 0;
+                dy = 0;
+            }
         }
 
+        // 4. Send the filtered inputs to the server
         if (client != null) {
             client.sendInput(dx, dy);
         }
 
         if (keyH.space) placeTrap(mainPlayer);
-        
     }
-
-    private void updateBots() {
-        for (Player p : players) {
-            if (p.bot && !p.isFrozen) {
-                p.updateBotMovement(getWidth(), getHeight());
-            }
-        }
-    }
-
-    
-    private void handleTagging() {
-        Player currentIt = getCurrentItPlayer();
-        if (currentIt == null) return;
-
-        for (Player p : players) {
-            if (p == currentIt) continue;
-
-            // ONLY handle logic if they collide
-            if (!currentIt.getBounds().intersects(p.getBounds())) continue;
-
-            // If target is in cooldown
-            if (p.isInvulnerable) continue;
-
-            // If target has shield (immune)
-            if (p.isImmune) {
-                p.isImmune = false; // consume shield
-                return; // no tag happens
-            }
-
-            // Normal tag
-            currentIt.isIt = false;
-
-            // former It gets cooldown
-            currentIt.isInvulnerable = true;
-            currentIt.lastTaggedTime = System.currentTimeMillis();
-
-            // new It
-            p.isIt = true;
-
-            return; // ensure ONLY ONE tag happens
-        }
-    }  
 
     private Player getCurrentItPlayer() {
         for (Player p : players) {
@@ -369,7 +312,7 @@ public class GamePanel extends JPanel {
                 			image = p1up1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p1up1;
+                			image = p1up2;
                 		}
                 		
                 		break;
@@ -378,7 +321,7 @@ public class GamePanel extends JPanel {
                 			image = p1down1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p1down1;
+                			image = p1down2;
                 		}
                 		break;
                 	case "left":
@@ -386,7 +329,7 @@ public class GamePanel extends JPanel {
                 			image = p1left1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p1left1;
+                			image = p1left2;
                 		}
                 		break;
                 	case "right":
@@ -394,7 +337,7 @@ public class GamePanel extends JPanel {
                 			image = p1right1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p1right1;
+                			image = p1right2;
                 		}
                 		break;
                 	}
@@ -411,7 +354,7 @@ public class GamePanel extends JPanel {
                 			image = p2up1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p2up1;
+                			image = p2up2;
                 		}
                 		
                 		break;
@@ -420,7 +363,7 @@ public class GamePanel extends JPanel {
                 			image = p2down1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p2down1;
+                			image = p2down2;
                 		}
                 		break;
                 	case "left":
@@ -428,7 +371,7 @@ public class GamePanel extends JPanel {
                 			image = p2left1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p2left1;
+                			image = p2left2;
                 		}
                 		break;
                 	case "right":
@@ -436,7 +379,7 @@ public class GamePanel extends JPanel {
                 			image = p2right1;
                 		}
                 		if(p.spriteNum == 2) {
-                			image = p2right1;
+                			image = p2right2;
                 		}
                 		break;
         			}
@@ -574,17 +517,25 @@ public class GamePanel extends JPanel {
     		
     		// player1 sprites
     		p1up1 = ImageIO.read(getClass().getResourceAsStream("/p1/up1.png"));
-    		p1down1 = ImageIO.read(getClass().getResourceAsStream("/p1/player.png"));
+    		p1down1 = ImageIO.read(getClass().getResourceAsStream("/p1/down1.png"));
     		p1left1 = ImageIO.read(getClass().getResourceAsStream("/p1/left1.png"));
     		p1right1 = ImageIO.read(getClass().getResourceAsStream("/p1/right1.png"));
+    		p1up2 = ImageIO.read(getClass().getResourceAsStream("/p1/up2.png"));
+    		p1down2 = ImageIO.read(getClass().getResourceAsStream("/p1/down2.png"));
+    		p1left2 = ImageIO.read(getClass().getResourceAsStream("/p1/left2.png"));
+    		p1right2 = ImageIO.read(getClass().getResourceAsStream("/p1/right2.png"));
     		
-    		// player1 sprites
+    		// player2 sprites
     		p2up1 = ImageIO.read(getClass().getResourceAsStream("/p2/up1.png"));
-    		p2down1 = ImageIO.read(getClass().getResourceAsStream("/p2/player.png"));
+    		p2down1 = ImageIO.read(getClass().getResourceAsStream("/p2/down1.png"));
     		p2left1 = ImageIO.read(getClass().getResourceAsStream("/p2/left1.png"));
     		p2right1 = ImageIO.read(getClass().getResourceAsStream("/p2/right1.png"));
+    		p2up2 = ImageIO.read(getClass().getResourceAsStream("/p2/up2.png"));
+    		p2down2 = ImageIO.read(getClass().getResourceAsStream("/p2/down2.png"));
+    		p2left2 = ImageIO.read(getClass().getResourceAsStream("/p2/left2.png"));
+    		p2right2 = ImageIO.read(getClass().getResourceAsStream("/p2/right2.png"));
     		
-    		// player1 sprites
+    		// player3 sprites
     		p3down = ImageIO.read(getClass().getResourceAsStream("/p3/player4.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
