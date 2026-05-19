@@ -1,14 +1,14 @@
 package main.network;
 
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import main.model.PowerUp;
-import main.model.Trap; 
-import java.awt.Rectangle;
 import java.util.Iterator;
 import java.util.Random;
+import main.model.PowerUp;
+import main.model.Trap;
 
 public class GameServer {
 
@@ -53,6 +53,8 @@ public class GameServer {
                 new Thread(client).start();
                 System.out.println("Player " + playerId + " joined. (" + clients.size() + "/" + MAX_PLAYERS + ")");
                 broadcast("SERVER Player " + playerId + " joined the game.");
+
+                broadcast("PLAYERS " + clients.size());
             }
 
             System.out.println("Lobby full. Starting countdown.");
@@ -247,6 +249,7 @@ public class GameServer {
         clients.remove(client);
         System.out.println("Player " + client.playerId + " removed.");
         broadcast("DISCONNECT " + client.playerId);
+        broadcast("PLAYERS " + clients.size());
         if (client.isIt && !clients.isEmpty()) {
             clients.get(0).isIt = true;
         }

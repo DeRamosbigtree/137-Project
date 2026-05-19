@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import main.model.PowerUp;
 import main.model.Trap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class GameClient {
 
@@ -19,6 +19,7 @@ public class GameClient {
 
     // Game phase: LOBBY, COUNTDOWN, PLAYING, GAME_OVER
     public volatile String phase = "LOBBY";
+    public volatile int connectedPlayers = 0;
     public volatile int timeLeft = 70;
     public volatile int countdownValue = 0;
     public volatile int winnerId = -1;

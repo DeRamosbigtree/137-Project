@@ -3,13 +3,12 @@ package main;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-
+import java.net.InetAddress;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import main.engine.GameLoop;
 import main.engine.GamePanel;
 import main.network.GameServer;
-import java.net.InetAddress;
 
 public class MainMenu extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
@@ -283,11 +282,11 @@ public class MainMenu extends JPanel implements MouseMotionListener, MouseListen
     
     public void getImage() {
     	try {
-            hostBtn = ImageIO.read(getClass().getResourceAsStream("/other/hostgame.png"));
-            hostBtnHover   = ImageIO.read(getClass().getResourceAsStream("/other/hostgamehover.png"));
-            joinBtn = ImageIO.read(getClass().getResourceAsStream("/other/joingame.png"));
-            joinBtnHover   = ImageIO.read(getClass().getResourceAsStream("/other/joingamehover.png"));
-            background   = ImageIO.read(getClass().getResourceAsStream("/other/mainmenuplaceholder.png"));
+            hostBtn = ImageIO.read(getClass().getResourceAsStream("/res/other/hostgame.png"));
+            hostBtnHover   = ImageIO.read(getClass().getResourceAsStream("/res/other/hostgamehover.png"));
+            joinBtn = ImageIO.read(getClass().getResourceAsStream("/res/other/joingame.png"));
+            joinBtnHover   = ImageIO.read(getClass().getResourceAsStream("/res/other/joingamehover.png"));
+            background   = ImageIO.read(getClass().getResourceAsStream("/res/other/mainmenuplaceholder.png"));
         } catch (Exception e) {
             System.err.println("Error loading menu button images!");
             e.printStackTrace();
