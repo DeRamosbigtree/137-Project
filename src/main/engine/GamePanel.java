@@ -509,7 +509,7 @@ public class GamePanel extends JPanel {
     		ghost = ImageIO.read(getClass().getResourceAsStream("/res/powerups/ghost.png"));
     		barrier = ImageIO.read(getClass().getResourceAsStream("/res/powerups/barrier.png"));
     		trap = ImageIO.read(getClass().getResourceAsStream("/res/powerups/trap.png"));
-    		iceblock = ImageIO.read(getClass().getResourceAsStream("/powerups/iceblock.png"));
+    		iceblock = ImageIO.read(getClass().getResourceAsStream("/res/powerups/iceblock.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
     	}

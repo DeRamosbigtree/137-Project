@@ -3,7 +3,6 @@ package main;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.net.InetAddress;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import main.engine.GameLoop;
@@ -44,34 +43,34 @@ public class MainMenu extends JPanel implements MouseMotionListener, MouseListen
         getImage();
     }
     
-    private String getLocalIP() {
-
-    try {
-        return InetAddress.getLocalHost().getHostAddress();
-    } catch (Exception e) {
-        return "localhost";
-    }
-}
-    // alternative method to get local IP via wifi
     // private String getLocalIP() {
-    //     try {
-    //         java.net.DatagramSocket socket = new java.net.DatagramSocket();
 
-    //         socket.connect(
-    //             java.net.InetAddress.getByName("8.8.8.8"),
-    //             10002
-    //         );
+    // try {
+    //     return InetAddress.getLocalHost().getHostAddress();
+    // } catch (Exception e) {
+    //     return "localhost";
+//     }
+// }
+    // alternative method to get local IP via wifi
+    private String getLocalIP() {
+        try {
+            java.net.DatagramSocket socket = new java.net.DatagramSocket();
 
-    //         String ip = socket.getLocalAddress().getHostAddress();
+            socket.connect(
+                java.net.InetAddress.getByName("8.8.8.8"),
+                10002
+            );
 
-    //         socket.close();
+            String ip = socket.getLocalAddress().getHostAddress();
 
-    //         return ip;
+            socket.close();
 
-    //     } catch (Exception e) {
-    //         return "localhost";
-    //     }
-    // }
+            return ip;
+
+        } catch (Exception e) {
+            return "localhost";
+        }
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
