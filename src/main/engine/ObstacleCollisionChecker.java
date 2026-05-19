@@ -12,7 +12,7 @@ public class ObstacleCollisionChecker {
 	}
 	
 	public void checkTile(Entity entity) {
-        // cast entity to player to access the correct x, y, and speed variables
+        // cast entity to player to access the correct x, y, and speed variables because may separate variables sa player
         Player player = (Player) entity;
 
 		int leftWorldX = player.x + player.solidArea.x;

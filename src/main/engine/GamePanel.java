@@ -51,8 +51,8 @@ public class GamePanel extends JPanel {
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2, frozen,
     					 p1up1, p1up2, p1down1, p1down2, p1left1, p1left2, p1right1, p1right2,
     					 p2up1, p2up2, p2down1, p2down2, p2left1, p2left2, p2right1, p2right2,
-    					 p2down, p3down,
-    					 speed, freeze, shield, ghost, barrier, trap;
+    					 p2down, p3down1, p3down2, p3left1, p3left2, p3right1, p3right2, p3up1, p3up2,
+    					 speed, freeze, shield, ghost, barrier, trap, iceblock;
     
     
     
@@ -103,14 +103,14 @@ public class GamePanel extends JPanel {
         String phaseText = "Phase: " + ((client != null) ? client.phase : "LOBBY");
         String connectedText = "Players connected: " + ((client != null) ? client.playerStates.size() : 0) + "/4";
 
-        g.drawString(serverText, 10, 560);
-        g.drawString(idText, 10, 580);
+        g.drawString(serverText, 10, 660);
+        g.drawString(idText, 10, 680);
 
         int phaseWidth = g.getFontMetrics().stringWidth(phaseText);
         int connectedWidth = g.getFontMetrics().stringWidth(connectedText);
 
-        g.drawString(phaseText, getWidth() - phaseWidth - 10, 560);
-        g.drawString(connectedText, getWidth() - connectedWidth - 10, 580);
+        g.drawString(phaseText, getWidth() - phaseWidth - 10, 660);
+        g.drawString(connectedText, getWidth() - connectedWidth - 10, 680);
     }
 
     public void updateGame() {
@@ -262,7 +262,7 @@ public class GamePanel extends JPanel {
         	switch(p.id) {
         	case 0:
         		if(p.isFrozen) {
-        			image = frozen;
+        			image = down1;
         		}else {
         			switch(p.direction) {
                 	case "up":
@@ -304,7 +304,7 @@ public class GamePanel extends JPanel {
         	// player 1
         	case 1:
         		if(p.isFrozen) {
-        			image = frozen;
+        			image = p1down1;
         		}else {
         			switch(p.direction) {
                 	case "up":
@@ -346,7 +346,7 @@ public class GamePanel extends JPanel {
         	// player 2 
         	case 2: 
         		if(p.isFrozen) {
-        			image = frozen;
+        			image = p2down1;
         		}else {
         			switch(p.direction) {
                 	case "up":
@@ -386,8 +386,45 @@ public class GamePanel extends JPanel {
         		}
         		break;
         	case 3:
-        		//temptilesize = 40;
-        		image = p3down;
+        		if(p.isFrozen) {
+        			image = p2down1;
+        		}else {
+        			switch(p.direction) {
+                	case "up":
+                		if(p.spriteNum == 1) {
+                			image = p3up1;
+                		}
+                		if(p.spriteNum == 2) {
+                			image = p3up2;
+                		}
+                		
+                		break;
+                	case "down":
+                		if(p.spriteNum == 1) {
+                			image = p3down1;
+                		}
+                		if(p.spriteNum == 2) {
+                			image = p3down2;
+                		}
+                		break;
+                	case "left":
+                		if(p.spriteNum == 1) {
+                			image = p3left1;
+                		}
+                		if(p.spriteNum == 2) {
+                			image = p3left2;
+                		}
+                		break;
+                	case "right":
+                		if(p.spriteNum == 1) {
+                			image = p3right1;
+                		}
+                		if(p.spriteNum == 2) {
+                			image = p3right2;
+                		}
+                		break;
+        			}
+        		}
         		break;
         	
         	}
@@ -409,7 +446,11 @@ public class GamePanel extends JPanel {
             g.drawString("P" + p.id, p.x + 8, p.y - 5);
             
             if(p.isImmune) {
-            	g.drawImage(barriershield, p.x-5, p.y-5, 40,40,null);
+            	g.drawImage(barriershield, p.x-4, p.y-4, 50,50,null);
+            }
+            
+            if(p.isFrozen) {
+            	g.drawImage(iceblock, p.x-4, p.y-4, 50,50,null);
             }
             
             g.setComposite(originalComposite);
@@ -468,6 +509,7 @@ public class GamePanel extends JPanel {
     		ghost = ImageIO.read(getClass().getResourceAsStream("/powerups/ghost.png"));
     		barrier = ImageIO.read(getClass().getResourceAsStream("/powerups/barrier.png"));
     		trap = ImageIO.read(getClass().getResourceAsStream("/powerups/trap.png"));
+    		iceblock = ImageIO.read(getClass().getResourceAsStream("/powerups/iceblock.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
@@ -536,7 +578,14 @@ public class GamePanel extends JPanel {
     		p2right2 = ImageIO.read(getClass().getResourceAsStream("/p2/right2.png"));
     		
     		// player3 sprites
-    		p3down = ImageIO.read(getClass().getResourceAsStream("/p3/player4.png"));
+    		p3up1 = ImageIO.read(getClass().getResourceAsStream("/p3/up1.png"));
+    		p3down1 = ImageIO.read(getClass().getResourceAsStream("/p3/down1.png"));
+    		p3left1 = ImageIO.read(getClass().getResourceAsStream("/p3/left1.png"));
+    		p3right1 = ImageIO.read(getClass().getResourceAsStream("/p3/right1.png"));
+    		p3up2 = ImageIO.read(getClass().getResourceAsStream("/p3/up2.png"));
+    		p3down2 = ImageIO.read(getClass().getResourceAsStream("/p3/down2.png"));
+    		p3left2 = ImageIO.read(getClass().getResourceAsStream("/p3/left2.png"));
+    		p3right2 = ImageIO.read(getClass().getResourceAsStream("/p3/right2.png"));
     	}catch(Exception e) {
     		e.printStackTrace();
     	}
