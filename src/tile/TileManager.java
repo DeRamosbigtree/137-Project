@@ -17,7 +17,7 @@ public class TileManager {
 
 	public TileManager(GamePanel gp) {
 		this.gp = gp;
-		tile = new Tile[30]; // types of tiles
+		tile = new Tile[31]; // types of tiles
 		mapTileNum = new int[gp.maxScreenCol][gp.maxScreenRow];
 		
 		getTileImage();
@@ -122,6 +122,15 @@ public class TileManager {
 			
 			tile[28] = new Tile();
 			tile[28].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/f5.png"));
+
+			tile[29] = new Tile();
+			tile[29].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/tulip1.png"));
+
+			tile[30] = new Tile();
+			tile[30].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/tulip2.png"));
+
+			tile[31] = new Tile();
+			tile[31].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/tulip3.png"));
 			
 			
 			
