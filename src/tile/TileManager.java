@@ -17,7 +17,7 @@ public class TileManager {
 
 	public TileManager(GamePanel gp) {
 		this.gp = gp;
-		tile = new Tile[31]; // types of tiles
+		tile = new Tile[32]; // types of tiles
 		mapTileNum = new int[gp.maxScreenCol][gp.maxScreenRow];
 		
 		getTileImage();
